@@ -1,8 +1,8 @@
 'use server';
 
-import prisma from '@/neup.core/helpers/prisma';
-import { getSessionCookies } from '@/neup.core/auth/cookies';
-import { getUrlParam } from '@/neup.core/helper/urlHelper';
+import prisma from '@/core/helpers/prisma';
+import { getSessionCookies } from '@/core/auth/cookies';
+import { getUrlParam } from '@/core/helper/urlHelper';
 
 export type AccountSelectorContext = {
   personalAccountId: string | null;

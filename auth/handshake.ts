@@ -1,6 +1,6 @@
-import { getActiveSession } from '@/neup.core/auth/verify';
-import { logError } from '@/neup.core/helpers/logger';
-import prisma from '@/neup.core/helpers/prisma';
+import { getActiveSession } from '@/core/auth/verify';
+import { logError } from '@/core/helpers/logger';
+import prisma from '@/core/helpers/prisma';
 import crypto from 'crypto';
 
 /**

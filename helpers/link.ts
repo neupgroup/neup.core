@@ -1,5 +1,5 @@
-import { APP_BASE_PATH } from '@/neup.core/appconfig';
-import { getFlowParams, appendFlowParamsObject } from '@/neup.core/auth/callback';
+import { APP_BASE_PATH } from '@/core/appconfig';
+import { getFlowParams, appendFlowParamsObject } from '@/core/auth/callback';
 import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
 
 type RouterLike = {

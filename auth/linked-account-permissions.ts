@@ -3,7 +3,7 @@ import {
   ACCESS_ACCOUNT_DEPENDENT_CREATE_PERMISSIONS,
   ACCESS_ACCOUNTS_SWITCH_PERMISSIONS,
   ACCESS_LINKED_ACCOUNT_VIEW_PERMISSIONS,
-} from '@/neup.core/auth/access-view-permissions';
+} from '@/core/auth/access-view-permissions';
 
 export const LINKED_ACCOUNT_PERMISSION_GROUPS = {
   brand: [

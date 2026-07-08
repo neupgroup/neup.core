@@ -7,13 +7,13 @@
 // Guest accounts have guest: 1 in the payload (and no nid).
 // Permanent accounts have a nid.
 
-import { cookieProvider } from '@/neup.core/providers/cookies';
-import type { StoredAccount } from '@/neup.core/auth/session';
+import { cookieProvider } from '@/core/providers/cookies';
+import type { StoredAccount } from '@/core/auth/session';
 import {
   signAccountToken,
   verifyAccountToken,
   type AccountTokenPayload,
-} from '@/neup.core/auth/accountToken';
+} from '@/core/auth/accountToken';
 
 const COOKIE_NAME = 'auth_account';
 

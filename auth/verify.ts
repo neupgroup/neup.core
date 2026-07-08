@@ -6,10 +6,10 @@
 
 import { redirect } from 'next/navigation';
 import { verifyActiveSession } from '@/services/auth/verify';
-import { getSessionCookies } from '@/neup.core/auth/cookies';
-import { getAccountSelectorContext } from '@/neup.core/auth/accountSelector';
-import { getCookie } from '@/neup.core/helper/cookieHelper';
-import { validateAuthAccountCookieSession } from '@/neup.logica/auth/validation';
+import { getSessionCookies } from '@/core/auth/cookies';
+import { getAccountSelectorContext } from '@/core/auth/accountSelector';
+import { getCookie } from '@/core/helper/cookieHelper';
+import { validateAuthAccountCookieSession } from '@/logica/auth/validation';
 
 // Represents an active session with both shorthand and legacy field names.
 export type Session = {
@@ -37,7 +37,7 @@ export async function hasActiveSessionCookies(): Promise<boolean> {
 // Returns null if the session is missing, expired, or tampered with.
 export async function getActiveSession(options: GetActiveSessionOptions = {}): Promise<Session | null> {
   const rawToken = await getCookie('auth_account');
-  const { verifyAccountToken } = await import('@/neup.core/auth/accountToken');
+  const { verifyAccountToken } = await import('@/core/auth/accountToken');
   const result = await validateAuthAccountCookieSession({
     token: rawToken,
     verifyToken: verifyAccountToken,

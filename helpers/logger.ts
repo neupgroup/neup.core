@@ -24,11 +24,11 @@ The file log path is rooted at `process.cwd()/neup.core/logs/error.log` so the l
 */
 
 import { headers } from 'next/headers';
-import { getActiveAccountId } from '@/neup.core/auth/verify';
+import { getActiveAccountId } from '@/core/auth/verify';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import prisma from '@/neup.core/helpers/prisma';
+import prisma from '@/core/helpers/prisma';
 
 type LogType = 'ai' | 'database' | 'validation' | 'auth' | 'unknown' | 'webhook';
 type ReportType = 'auto' | 'submitted';

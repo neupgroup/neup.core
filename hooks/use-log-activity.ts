@@ -1,7 +1,7 @@
 "use client";
 
 import {useContext} from 'react';
-import {Geolocation} from '@/neup.core/providers/geolocation';
+import {Geolocation} from '@/core/providers/geolocation';
 import {logActivity} from '@/services/log-actions';
 
 

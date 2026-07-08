@@ -3,7 +3,7 @@
 // Use setCookieRaw() when you need full control over cookie attributes.
 
 import { cookies } from 'next/headers';
-import { Singleton } from '@/neup.core/interface/singleton';
+import { Singleton } from '@/core/interface/singleton';
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
 type SameSite = 'strict' | 'lax' | 'none';

@@ -3,7 +3,7 @@
 // Use redirectInDomain for same-origin hard navigation.
 // Use redirectHttps / redirectHttp for external URLs.
 
-import { getFlowParams, appendFlowParamsObject } from '@/neup.core/auth/callback';
+import { getFlowParams, appendFlowParamsObject } from '@/core/auth/callback';
 import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
 
 type RouterNavigationOptions = {

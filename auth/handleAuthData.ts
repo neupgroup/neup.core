@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { verifyAccountToken } from '@/neup.core/auth/accountToken';
+import { verifyAccountToken } from '@/core/auth/accountToken';
 
 /**
  * The three possible outcomes of handleAuthData.

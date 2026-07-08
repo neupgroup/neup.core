@@ -1,10 +1,10 @@
 'use server';
 
-import prisma from '@/neup.core/helpers/prisma';
-import { hasAnyPermission, PROFILE_SECTION_PERMISSIONS } from '@/neup.core/auth/profile-permissions';
+import prisma from '@/core/helpers/prisma';
+import { hasAnyPermission, PROFILE_SECTION_PERMISSIONS } from '@/core/auth/profile-permissions';
 import { validateAuthSession } from '@/services/auth/session';
 import { getAccountPermission, getGrantedAccountPermission, getUserProfile } from '@/services/user';
-import { permission } from '@/neup.logica/permission';
+import { permission } from '@/logica/permission';
 
 const servicePermissions = [
   permission('profile.display.view.self', 'for_individual', 'service'),

@@ -1,7 +1,7 @@
 import {
   ACCESS_APPLICATION_VIEW_PERMISSIONS,
   ACCESS_CONNECTION_VIEW_PERMISSIONS,
-} from '@/neup.core/auth/access-view-permissions';
+} from '@/core/auth/access-view-permissions';
 
 export const DATA_PRIVACY_PERMISSION_GROUPS = {
   terms: ['data.agreed_terms.view'],

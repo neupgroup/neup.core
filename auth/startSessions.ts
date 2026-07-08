@@ -1,7 +1,7 @@
 'use server';
 
-import { clearSessionCookies, getSessionCookies } from '@/neup.core/auth/cookies';
-import prisma from '@/neup.core/helpers/prisma';
+import { clearSessionCookies, getSessionCookies } from '@/core/auth/cookies';
+import prisma from '@/core/helpers/prisma';
 import { makeNotification } from '@/services/notifications';
 
 export async function logoutStoredSession(sessionId: string): Promise<{ success: boolean; error?: string }> {

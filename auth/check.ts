@@ -6,8 +6,8 @@
 
 import { getUserProfile, getAccountPermission, getGrantedAccountPermission } from '@/services/user';
 import type { StoredProfileInfo } from './storage';
-import { getAccountSelectorContext } from '@/neup.core/auth/accountSelector';
-import { getActiveSession } from '@/neup.core/auth/verify';
+import { getAccountSelectorContext } from '@/core/auth/accountSelector';
+import { getActiveSession } from '@/core/auth/verify';
 
 export type SessionCheckResult =
     | { valid: false }

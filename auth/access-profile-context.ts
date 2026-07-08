@@ -1,12 +1,12 @@
 'use server';
 
-import { getUrlParam } from '@/neup.core/helper/urlHelper';
-import { getPersonalAccountId } from '@/neup.core/auth/verify';
+import { getUrlParam } from '@/core/helper/urlHelper';
+import { getPersonalAccountId } from '@/core/auth/verify';
 import {
   getAccountPermission,
   getGrantedAccountPermission,
 } from '@/services/user';
-import { hasAnyPermission } from '@/neup.core/auth/profile-permissions';
+import { hasAnyPermission } from '@/core/auth/profile-permissions';
 import {
   getCanonicalPermissionAudience,
   resolveNeupAccountPermissionCandidates,

@@ -4,10 +4,10 @@
 // This is the main session layer — it creates sessions, validates stored accounts,
 // and handles switching between personal, brand, dependent, and delegated contexts.
 
-import prisma from '@/neup.core/helpers/prisma';
+import prisma from '@/core/helpers/prisma';
 import crypto from 'crypto';
 
-import { logError } from '@/neup.core/helpers/logger';
+import { logError } from '@/core/helpers/logger';
 
 // Represents an active session with both shorthand and legacy field names.
 export type Session = {
@@ -43,7 +43,7 @@ export type StoredAccount = {
   accountType?: string;
 };
 
-import { setStoredAccountsCookie, getSessionCookies } from '@/neup.core/auth/cookies';
+import { setStoredAccountsCookie, getSessionCookies } from '@/core/auth/cookies';
 import { getUserNeupIds, validateNeupId } from '@/services/user';
 
 const SESSION_DURATION_DAYS = 30;
@@ -97,7 +97,7 @@ export async function createAndSetSession(
     const neupIds = await getUserNeupIds(accountId);
     const primaryNeupId = neupIds[0];
 
-    const { setAccount } = await import('@/neup.core/auth/accounts');
+    const { setAccount } = await import('@/core/auth/accounts');
     await setAccount(accountId, session.id, sessionKey, primaryNeupId ?? '');
 
   } catch (error) {

@@ -1,7 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { addAccount, getAccount } from '@/neup.core/auth/accounts';
+import { addAccount, getAccount } from '@/core/auth/accounts';
 import {
   resolveGuestAccount as resolveGuestAccountService,
   rotateGuestAccountOnLogout as rotateGuestAccountOnLogoutService,

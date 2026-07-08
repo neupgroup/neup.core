@@ -1,9 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { getSessionCookies } from '@/neup.core/auth/cookies';
-import { getCookie } from '@/neup.core/helper/cookieHelper';
-import { getActiveSession } from '@/neup.core/auth/verify';
+import { getSessionCookies } from '@/core/auth/cookies';
+import { getCookie } from '@/core/helper/cookieHelper';
+import { getActiveSession } from '@/core/auth/verify';
 
 type RequireValidSessionOptions = {
   redirectTo?: string;

@@ -5,7 +5,7 @@ import {
   ACCESS_CONNECTION_ADD_PERMISSIONS,
   ACCESS_CONNECTION_REMOVE_PERMISSIONS,
   ACCESS_CONNECTION_VIEW_PERMISSIONS,
-} from '@/neup.core/auth/access-view-permissions';
+} from '@/core/auth/access-view-permissions';
 
 export const SECURITY_PERMISSION_GROUPS = {
   password: ['security.pass.modify.self'],

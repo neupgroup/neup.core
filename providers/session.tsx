@@ -8,15 +8,15 @@
 import { createContext, useState, useEffect, type ReactNode, useContext, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { type UserProfile, getUserProfile as fetchUserProfile } from '@/services/user';
-import { checkSession } from '@/neup.core/auth/check';
-import { AUTH_STATE_CHANGED_EVENT } from '@/neup.core/auth/events';
+import { checkSession } from '@/core/auth/check';
+import { AUTH_STATE_CHANGED_EVENT } from '@/core/auth/events';
 import {
     getSessionData,
     setSessionData,
     deleteSessionData,
     PROFILE_INFO_KEY,
     JWT_KEY,
-} from '@/neup.core/auth/storage';
+} from '@/core/auth/storage';
 
 type SessionState = {
     loading: boolean;

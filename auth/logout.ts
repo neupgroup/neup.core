@@ -1,11 +1,11 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { clearSessionCookies, getSessionCookies, setStoredAccountsCookie } from '@/neup.core/auth/cookies';
+import { clearSessionCookies, getSessionCookies, setStoredAccountsCookie } from '@/core/auth/cookies';
 import { logActivity } from '@/services/log-actions';
-import { logError } from '@/neup.core/helpers/logger';
+import { logError } from '@/core/helpers/logger';
 import { expireSession } from '@/services/auth/session';
-import { rotateGuestAccountOnLogout } from '@/neup.core/auth/guestAccount';
+import { rotateGuestAccountOnLogout } from '@/core/auth/guestAccount';
 import { activityAction } from '@/services/activity-action';
 
 export async function logoutActiveSession() {

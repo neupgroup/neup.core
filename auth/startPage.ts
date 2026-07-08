@@ -1,6 +1,6 @@
-import prisma from '@/neup.core/helpers/prisma';
-import { getActiveSession } from '@/neup.core/auth/verify';
-import { getValidatedStoredAccounts } from '@/neup.core/auth/session';
+import prisma from '@/core/helpers/prisma';
+import { getActiveSession } from '@/core/auth/verify';
+import { getValidatedStoredAccounts } from '@/core/auth/session';
 
 /**
  * Function getFirstValue.

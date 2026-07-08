@@ -1,14 +1,14 @@
-import { getSessionCookies } from '@/neup.core/auth/cookies';
-import { getValidatedStoredAccounts } from '@/neup.core/auth/session';
-import { getAppDisplayName, buildAuthQuery, getServerAuthContext, buildAuthPath, buildAuthCallbackWithStatus, getServerFlowParams } from '@/neup.core/auth/callback';
-import prisma from '@/neup.core/helpers/prisma';
+import { getSessionCookies } from '@/core/auth/cookies';
+import { getValidatedStoredAccounts } from '@/core/auth/session';
+import { getAppDisplayName, buildAuthQuery, getServerAuthContext, buildAuthPath, buildAuthCallbackWithStatus, getServerFlowParams } from '@/core/auth/callback';
+import prisma from '@/core/helpers/prisma';
 import { randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { getUserProfile } from '@/services/user';
 import { validateExternalRequest } from '@/services/auth/validate';
 import { getApplicationDefaultRoleId } from '@/services/applications/default-role';
 import { applicationPartyValues, type ApplicationParty } from '@/services/applications/types';
-import { verifyAccountToken } from '@/neup.core/auth/accountToken';
+import { verifyAccountToken } from '@/core/auth/accountToken';
 import { validateAuthSession } from '@/services/auth/session';
 
 const EXTERNAL_LOGIN_PREFIX = 'external_app:';

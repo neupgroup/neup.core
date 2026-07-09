@@ -8,8 +8,8 @@
 import { createContext, useState, useEffect, type ReactNode, useContext, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { type UserProfile, getUserProfile as fetchUserProfile } from '@/services/user';
-import { checkSession } from '@/core/auth/check';
-import { AUTH_STATE_CHANGED_EVENT } from '@/core/auth/events';
+import { checkSession } from '@/logica/account/check';
+import { AUTH_STATE_CHANGED_EVENT } from '@/logica/account/events';
 import {
     getSessionData,
     setSessionData,

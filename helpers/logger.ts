@@ -24,7 +24,7 @@ The file log path is rooted at `process.cwd()/neup.core/logs/error.log` so the l
 */
 
 import { headers } from 'next/headers';
-import { getActiveAccountId } from '@/core/auth/verify';
+import { getActiveAccountId } from '@/logica/account/verify';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';

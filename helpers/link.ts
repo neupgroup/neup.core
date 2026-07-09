@@ -1,5 +1,5 @@
 import { APP_BASE_PATH } from '@/core/appconfig';
-import { getFlowParams, appendFlowParamsObject } from '@/core/auth/callback';
+import { getFlowParams, appendFlowParamsObject } from '@/core/auth/callbacks';
 import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
 
 type RouterLike = {

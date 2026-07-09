@@ -1,8 +1,8 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { getCookie, setCookies } from '@/core/helper/cookieHelper';
-import type { StoredAccount, Session } from '@/core/auth/session';
+import { getCookie, setCookies } from '@/core/helpers/cookie';
+import type { StoredAccount, Session } from '@/logica/account/session';
 import { readValidAuthAccountCookiePayload } from '@/logica/auth/validation';
 
 type SessionCookiePayload = {
@@ -48,7 +48,7 @@ export async function getSessionCookies(): Promise<SessionCookiePayload> {
   }
 
   try {
-    const { verifyAccountToken } = await import('@/core/auth/accountToken');
+    const { verifyAccountToken } = await import('@/core/auth/decoder');
     const normalized = await readValidAuthAccountCookiePayload({
       token: raw,
       verifyToken: verifyAccountToken,
@@ -92,7 +92,7 @@ export async function setSessionCookies(session: Session, _expires: Date): Promi
     throw new Error('Missing session values for cookie set.');
   }
 
-  const { setAccount } = await import('@/core/auth/accounts');
+  const { setAccount } = await import('@/logica/account/accounts');
   const existing = await getSessionCookies();
   const nid = existing.allAccounts[0]?.nid || '';
   await setAccount(aid, sid, skey, nid);
@@ -102,7 +102,7 @@ export async function setStoredAccountsCookie(accounts: StoredAccount[]): Promis
   const active = accounts.find((account) => account.def === 1) ?? accounts[0];
   if (!active) return;
 
-  const { signAccountToken } = await import('@/core/auth/accountToken');
+  const { signAccountToken } = await import('@/core/auth/decoder');
   const isGuest = !active.nid && !active.neupId;
 
   const token = await signAccountToken(

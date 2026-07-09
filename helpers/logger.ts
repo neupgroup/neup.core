@@ -28,7 +28,7 @@ import { getActiveAccountId } from '@/logica/account/verify';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import prisma from '@/core/helpers/prisma';
+import prisma from '@/core/database/prisma';
 
 type LogType = 'ai' | 'database' | 'validation' | 'auth' | 'unknown' | 'webhook';
 type ReportType = 'auto' | 'submitted';

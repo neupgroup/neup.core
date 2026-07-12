@@ -2,8 +2,22 @@
 
 import {useContext} from 'react';
 import {Geolocation} from '@/core/providers/geolocation';
-import {logActivity} from '@/services/log-actions';
 
+type ActivityStatus = "Success" | "Failed" | "Pending" | "Alert";
+type ActivityLogger = (
+    memberId: string,
+    action: string,
+    status: ActivityStatus,
+    ipAddress?: string,
+    actorAccountId?: string,
+    location?: string,
+) => unknown;
+
+let activityLogger: ActivityLogger | null = null;
+
+export function setActivityLogger(logger: ActivityLogger | null) {
+    activityLogger = logger;
+}
 
 // Client-side hook to wrap logActivity and inject geolocation
 export function useLogActivity() {
@@ -20,6 +34,6 @@ export function useLogActivity() {
             ? `${geo.latitude},${geo.longitude}`
             : undefined;
 
-        return logActivity(memberId, action, status, ipAddress, actorAccountId, locationString);
+        return activityLogger?.(memberId, action, status, ipAddress, actorAccountId, locationString);
     };
 }

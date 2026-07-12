@@ -1,5 +1,28 @@
 import { headers } from 'next/headers';
 
+/*
+::neup.documentation::core-helper-url
+::title URL Helper
+
+Shared helpers for request URL construction, URL query extraction, request protocol checks, and user-entered URL normalization.
+
+::public
+
+Use `normalizeUrl()` for persisted profile or asset URLs that may be entered without a protocol.
+
+Use `buildPublicAppUrl()` and `getPublicAppOrigin()` for public app URLs derived from request headers.
+
+::public end
+
+::private
+
+`normalizeUrl()` does not modify root-relative paths or values that already include a URI scheme.
+
+::private end
+
+::end
+*/
+
 type RequestLike = {
   url?: string;
   nextUrl?: { href?: string; origin?: string; protocol?: string };
@@ -17,6 +40,21 @@ function normalizeBasePath(basePath: string): string {
 function getForwardedValue(value: string | null | undefined): string | null {
   if (!value) return null;
   return value.split(',')[0]?.trim() || null;
+}
+
+export function normalizeUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed) || trimmed.startsWith('/') || trimmed.startsWith('#')) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('//')) {
+    return `https:${trimmed}`;
+  }
+
+  return `https://${trimmed}`;
 }
 
 export function getPublicAppOrigin(request?: RequestLike): string {

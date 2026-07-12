@@ -1,6 +1,6 @@
 import { APP_BASE_PATH } from '@/core/appconfig';
 import { getFlowParams, appendFlowParamsObject } from '@/core/auth/callbacks';
-import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
+import { appendApplicationRootMode } from '@/core/helpers/application-mode';
 
 type RouterLike = {
     push: (href: string, options?: { scroll?: boolean }) => void;

@@ -2,8 +2,26 @@
 
 import { cookies } from 'next/headers';
 import { getCookie, setCookies } from '@/core/helpers/cookie';
-import type { StoredAccount, Session } from '@/logica/account/session';
-import { readValidAuthAccountCookiePayload } from '@/logica/auth/validation';
+import { signAccountToken, verifyAccountToken } from '@/core/auth/decoder';
+
+export type StoredAccount = {
+  aid: string;
+  sid?: string;
+  skey?: string;
+  def?: 1;
+  nid?: string;
+  neupId?: string;
+  guest?: 1;
+};
+
+export type Session = {
+  aid?: string;
+  sid?: string;
+  skey?: string;
+  accountId?: string;
+  sessionId?: string;
+  sessionKey?: string;
+};
 
 type SessionCookiePayload = {
   aid: string;
@@ -48,24 +66,20 @@ export async function getSessionCookies(): Promise<SessionCookiePayload> {
   }
 
   try {
-    const { verifyAccountToken } = await import('@/core/auth/decoder');
-    const normalized = await readValidAuthAccountCookiePayload({
-      token: raw,
-      verifyToken: verifyAccountToken,
-    });
+    const payload = await verifyAccountToken(raw);
 
-    if (!normalized) {
+    if (!payload?.aid || !payload.sid || !payload.skey) {
       return getEmptySessionCookiePayload();
     }
 
     const account = {
-      aid: normalized.accountId,
-      sid: normalized.sessionId,
-      skey: normalized.sessionKey,
+      aid: payload.aid,
+      sid: payload.sid,
+      skey: payload.skey,
       def: 1 as const,
-      nid: normalized.payload.nid ?? normalized.payload.neupId ?? '',
-      neupId: normalized.payload.neupId ?? normalized.payload.nid ?? '',
-      guest: normalized.payload.guest,
+      nid: payload.nid ?? payload.neupId ?? '',
+      neupId: payload.neupId ?? payload.nid ?? '',
+      guest: payload.guest,
     } satisfies StoredAccount;
 
     return {
@@ -92,17 +106,15 @@ export async function setSessionCookies(session: Session, _expires: Date): Promi
     throw new Error('Missing session values for cookie set.');
   }
 
-  const { setAccount } = await import('@/logica/account/accounts');
   const existing = await getSessionCookies();
   const nid = existing.allAccounts[0]?.nid || '';
-  await setAccount(aid, sid, skey, nid);
+  await setStoredAccountsCookie([{ aid, sid, skey, nid, def: 1 }]);
 }
 
 export async function setStoredAccountsCookie(accounts: StoredAccount[]): Promise<void> {
   const active = accounts.find((account) => account.def === 1) ?? accounts[0];
   if (!active) return;
 
-  const { signAccountToken } = await import('@/core/auth/decoder');
   const isGuest = !active.nid && !active.neupId;
 
   const token = await signAccountToken(

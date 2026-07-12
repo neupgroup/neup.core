@@ -4,7 +4,7 @@
 // Use redirectHttps / redirectHttp for external URLs.
 
 import { getFlowParams, appendFlowParamsObject } from '@/core/auth/callbacks';
-import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
+import { appendApplicationRootMode } from '@/core/helpers/application-mode';
 
 type RouterNavigationOptions = {
   scroll?: boolean;

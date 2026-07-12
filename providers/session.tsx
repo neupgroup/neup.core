@@ -7,16 +7,21 @@
 
 import { createContext, useState, useEffect, type ReactNode, useContext, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { type UserProfile, getUserProfile as fetchUserProfile } from '@/services/user';
-import { checkSession } from '@/logica/account/check';
-import { AUTH_STATE_CHANGED_EVENT } from '@/logica/account/events';
+import { AUTH_STATE_CHANGED_EVENT } from '@/core/auth/events';
 import {
     getSessionData,
-    setSessionData,
     deleteSessionData,
     PROFILE_INFO_KEY,
     JWT_KEY,
 } from '@/core/auth/storage';
+
+type UserProfile = {
+    firstName?: string;
+    lastName?: string;
+    neupId?: string;
+    accountType?: string;
+    [key: string]: unknown;
+};
 
 type SessionState = {
     loading: boolean;
@@ -57,47 +62,24 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     fetchDataRef.current = async (forceRefresh = false) => {
         setSessionState(s => ({ ...s, loading: true }));
 
-        const result = await checkSession(workingProfileId);
-
-        if (!result.valid) {
-            // Clear any stale cached data on invalid session
-            deleteSessionData();
-            setSessionState(s => ({ ...s, loading: false, profile: null, permissions: [] }));
-            return;
-        }
-
-        // Compare cached profile against fresh data — only update sessionStorage if changed
         const cachedProfile = getSessionData(PROFILE_INFO_KEY);
-        const profileChanged = !cachedProfile ||
-            cachedProfile.firstName !== result.profileInfo.firstName ||
-            cachedProfile.lastName !== result.profileInfo.lastName ||
-            cachedProfile.neupId !== result.profileInfo.neupId ||
-            cachedProfile.accountType !== result.profileInfo.accountType;
-
-        if (profileChanged) {
-            setSessionData(PROFILE_INFO_KEY, result.profileInfo);
-        }
-
-        // Compare cached permissions JSON — only update if the set has changed
         const cachedPermissions = getSessionData(JWT_KEY);
-        const freshPermissionsJson = JSON.stringify(result.permissions);
-        if (cachedPermissions !== freshPermissionsJson) {
-            setSessionData(JWT_KEY, freshPermissionsJson);
-        }
-
-        // Only fetch the full profile from the server if the data has changed or is missing
-        let fullProfile: UserProfile | null = sessionState.profile;
-        if (forceRefresh || profileChanged || !fullProfile) {
-            fullProfile = await fetchUserProfile(result.accountId);
+        let permissions: unknown = [];
+        if (typeof cachedPermissions === 'string') {
+            try {
+                permissions = JSON.parse(cachedPermissions || '[]');
+            } catch {
+                permissions = [];
+            }
         }
 
         setSessionState({
             loading: false,
-            profile: fullProfile,
-            permissions: result.permissions,
-            accountId: result.accountId,
-            personalAccountId: result.personalAccountId,
-            isManaging: result.accountId !== result.personalAccountId,
+            profile: forceRefresh ? cachedProfile : (cachedProfile ?? sessionState.profile),
+            permissions: Array.isArray(permissions) ? permissions : [],
+            accountId: workingProfileId,
+            personalAccountId: null,
+            isManaging: Boolean(workingProfileId),
             refetch: () => fetchDataRef.current(true),
         });
     };

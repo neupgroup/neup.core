@@ -10,7 +10,7 @@ Centralized error logging helpers for file-based and database-backed error trace
 
 `logError()` writes structured error entries to the server console and to `neup.core/logs/error.log`.
 
-`logSystemError()` writes lightweight persisted error records to the `system_error` table.
+`logSystemError()` writes lightweight persisted error records to the `errors` table.
 
 ::public end
 
@@ -24,14 +24,42 @@ The file log path is rooted at `process.cwd()/neup.core/logs/error.log` so the l
 */
 
 import { headers } from 'next/headers';
-import { getActiveAccountId } from '@/logica/account/verify';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import prisma from '@/core/database/prisma';
+import { verifyAccountToken } from '@/core/auth/decoder';
 
 type LogType = 'ai' | 'database' | 'validation' | 'auth' | 'unknown' | 'webhook';
 type ReportType = 'auto' | 'submitted';
+
+export interface LogErrorParams {
+    message: string;
+    stack?: string;
+    componentStack?: string;
+    source?: string;
+    details?: string;
+}
+
+async function getRequestIp(): Promise<string> {
+    return (await headers()).get('x-forwarded-for') || 'Unknown IP';
+}
+
+async function getActiveAccountId(): Promise<string | null> {
+    const rawCookie = (await headers()).get('cookie') ?? '';
+    const authCookie = rawCookie
+        .split(';')
+        .map((part) => part.trim())
+        .find((part) => part.startsWith('auth_account='));
+
+    if (!authCookie) {
+        return null;
+    }
+
+    const token = decodeURIComponent(authCookie.slice('auth_account='.length));
+    const payload = await verifyAccountToken(token);
+    return payload?.aid ?? null;
+}
 
 export async function logError(
     type: LogType, 
@@ -40,7 +68,7 @@ export async function logError(
     reportType: ReportType = 'auto'
 ) {
     let errorMessage: string;
-    const ip = (await headers()).get('x-forwarded-for') || 'Unknown IP';
+    const ip = await getRequestIp();
     const accountId = await getActiveAccountId();
 
     // Normalize the error into a string regardless of its original type
@@ -101,20 +129,41 @@ export async function logSystemError(
     message: string,
     context: string = 'No context',
 ) {
-    const ip = (await headers()).get('x-forwarded-for') || 'Unknown IP';
+    const ip = await getRequestIp();
     const accountId = await getActiveAccountId();
 
     try {
-        await prisma.systemError.create({
+        await prisma.errorLog.create({
             data: {
                 message,
-                context,
-                accountId,
-                ipAddress: ip,
+                source: context,
+                details: JSON.stringify({ accountId, ipAddress: ip }),
+                timestamp: new Date(),
             },
         });
     } catch (error) {
         // eslint-disable-next-line no-console
         console.error("CRITICAL: Could not write system error record.", error);
+    }
+}
+
+
+
+
+
+
+export async function logErrorToDatabase(params: LogErrorParams): Promise<{ success: boolean, error?: string }> {
+    try {
+        await prisma.errorLog.create({
+          data: {
+            ...params,
+            timestamp: new Date(),
+          },
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error("CRITICAL: Failed to log error to database:", e);
+        console.error("Original Error to be Logged:", params);
+        return { success: false, error: e.message };
     }
 }

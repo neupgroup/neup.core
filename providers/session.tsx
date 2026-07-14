@@ -1,123 +1,158 @@
 "use client";
 
-// Provides the active session state to the entire component tree.
-// On mount, calls checkSession() to verify the session and load the profile and permissions.
-// Caches a lightweight profile snapshot and permissions JSON in sessionStorage to avoid
-// redundant server calls on subsequent renders. Cache is invalidated on refetch().
+/*
+::neup.documentation::core-session-provider
+::title Core Session Provider
 
-import { createContext, useState, useEffect, type ReactNode, useContext, useRef } from 'react';
+Client session provider and hook for the account app shell.
+
+::public
+
+This module exposes `SessionProvider` and `useSession()` so client components can read the current signed-in profile, permissions, and active-account state.
+
+::public end
+
+::private
+
+The provider hydrates from the server-side account session check, caches the lightweight profile snapshot in browser storage, and refetches whenever auth state or the `workingProfile` query changes.
+
+::private end
+
+::end
+*/
+
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AUTH_STATE_CHANGED_EVENT } from '@/core/auth/events';
+import { AUTH_STATE_CHANGED_EVENT } from '@/inapp/auth/events';
 import {
-    getSessionData,
-    deleteSessionData,
-    PROFILE_INFO_KEY,
-    JWT_KEY,
-} from '@/core/auth/storage';
-
-type UserProfile = {
-    firstName?: string;
-    lastName?: string;
-    neupId?: string;
-    accountType?: string;
-    [key: string]: unknown;
-};
+  deleteSessionData,
+  getSessionData,
+  JWT_KEY,
+  PROFILE_INFO_KEY,
+  setSessionData,
+} from '@/inapp/auth/storage';
+import { checkSession } from '@/logica/account/check';
+import { type UserProfile, getUserProfile as fetchUserProfile } from '@/services/user';
 
 type SessionState = {
-    loading: boolean;
-    profile: UserProfile | null;
-    permissions: string[] | null;
-    accountId: string | null;
-    personalAccountId: string | null;
-    isManaging: boolean; // true when the active account differs from the personal account
-    refetch: () => void;
+  loading: boolean;
+  profile: UserProfile | null;
+  permissions: string[] | null;
+  accountId: string | null;
+  personalAccountId: string | null;
+  isManaging: boolean;
+  refetch: () => void;
 };
 
 const SessionContext = createContext<SessionState | undefined>(undefined);
 
-// Hook to consume the session context. Must be used inside a SessionProvider.
-export function useSession() {
-    const context = useContext(SessionContext);
-    if (!context) {
-        throw new Error('useSession must be used within a SessionProvider');
-    }
-    return context;
+export function useSession(): SessionState {
+  const context = useContext(SessionContext);
+
+  if (!context) {
+    throw new Error('useSession must be used within a SessionProvider');
+  }
+
+  return context;
 }
 
-export const SessionProvider = ({ children }: { children: ReactNode }) => {
-    const searchParams = useSearchParams();
-    const workingProfileId = searchParams.get('workingProfile');
-    const workingProfileRef = useRef<string | null>(workingProfileId);
-    const [sessionState, setSessionState] = useState<SessionState>({
-        loading: true,
+export function SessionProvider({ children }: { children: ReactNode }) {
+  const searchParams = useSearchParams();
+  const workingProfileId = searchParams.get('workingProfile');
+  const workingProfileRef = useRef<string | null>(workingProfileId);
+  const fetchDataRef = useRef<(forceRefresh?: boolean) => Promise<void>>(async () => {});
+  const [sessionState, setSessionState] = useState<SessionState>({
+    loading: true,
+    profile: null,
+    permissions: null,
+    accountId: null,
+    personalAccountId: null,
+    isManaging: false,
+    refetch: () => {},
+  });
+
+  fetchDataRef.current = async (forceRefresh = false) => {
+    setSessionState((currentState) => ({ ...currentState, loading: true }));
+
+    const result = await checkSession(workingProfileId);
+
+    if (!result.valid) {
+      deleteSessionData();
+      setSessionState((currentState) => ({
+        ...currentState,
+        loading: false,
         profile: null,
-        permissions: null,
-        accountId: null,
-        personalAccountId: null,
-        isManaging: false,
-        refetch: () => {},
+        permissions: [],
+      }));
+      return;
+    }
+
+    const cachedProfile = getSessionData(PROFILE_INFO_KEY);
+    const profileChanged =
+      !cachedProfile ||
+      cachedProfile.firstName !== result.profileInfo.firstName ||
+      cachedProfile.lastName !== result.profileInfo.lastName ||
+      cachedProfile.neupId !== result.profileInfo.neupId ||
+      cachedProfile.accountType !== result.profileInfo.accountType ||
+      cachedProfile.accountPhoto !== result.profileInfo.accountPhoto;
+
+    if (profileChanged) {
+      setSessionData(PROFILE_INFO_KEY, result.profileInfo);
+    }
+
+    const cachedPermissions = getSessionData(JWT_KEY);
+    const freshPermissionsJson = JSON.stringify(result.permissions);
+    if (cachedPermissions !== freshPermissionsJson) {
+      setSessionData(JWT_KEY, freshPermissionsJson);
+    }
+
+    let fullProfile: UserProfile | null = sessionState.profile;
+    if (forceRefresh || profileChanged || !fullProfile) {
+      fullProfile = await fetchUserProfile(result.accountId);
+    }
+
+    setSessionState({
+      loading: false,
+      profile: fullProfile,
+      permissions: result.permissions,
+      accountId: result.accountId,
+      personalAccountId: result.personalAccountId,
+      isManaging: result.accountId !== result.personalAccountId,
+      refetch: () => fetchDataRef.current(true),
     });
-    const fetchDataRef = useRef<(forceRefresh?: boolean) => Promise<void>>(async () => {});
+  };
 
-    fetchDataRef.current = async (forceRefresh = false) => {
-        setSessionState(s => ({ ...s, loading: true }));
+  const clearCacheAndRefetch = () => {
+    deleteSessionData();
+    void fetchDataRef.current(true);
+  };
 
-        const cachedProfile = getSessionData(PROFILE_INFO_KEY);
-        const cachedPermissions = getSessionData(JWT_KEY);
-        let permissions: unknown = [];
-        if (typeof cachedPermissions === 'string') {
-            try {
-                permissions = JSON.parse(cachedPermissions || '[]');
-            } catch {
-                permissions = [];
-            }
-        }
+  useEffect(() => {
+    void fetchDataRef.current();
 
-        setSessionState({
-            loading: false,
-            profile: forceRefresh ? cachedProfile : (cachedProfile ?? sessionState.profile),
-            permissions: Array.isArray(permissions) ? permissions : [],
-            accountId: workingProfileId,
-            personalAccountId: null,
-            isManaging: Boolean(workingProfileId),
-            refetch: () => fetchDataRef.current(true),
-        });
+    const handleAuthStateChanged = () => {
+      clearCacheAndRefetch();
     };
 
-    // Clears the sessionStorage cache and forces a full re-fetch from the server.
-    const clearCacheAndRefetch = () => {
-        deleteSessionData();
-        void fetchDataRef.current(true);
+    window.addEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
+
+    return () => {
+      window.removeEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
     };
+  }, []);
 
-    useEffect(() => {
-        void fetchDataRef.current();
+  useEffect(() => {
+    if (workingProfileRef.current === workingProfileId) {
+      return;
+    }
 
-        const handleAuthStateChanged = () => {
-            clearCacheAndRefetch();
-        };
+    workingProfileRef.current = workingProfileId;
+    clearCacheAndRefetch();
+  }, [workingProfileId]);
 
-        window.addEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
-
-        return () => {
-            window.removeEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        if (workingProfileRef.current === workingProfileId) {
-            return;
-        }
-
-        workingProfileRef.current = workingProfileId;
-        clearCacheAndRefetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [workingProfileId]);
-
-    return (
-        <SessionContext.Provider value={{ ...sessionState, refetch: clearCacheAndRefetch }}>
-            {children}
-        </SessionContext.Provider>
-    );
-};
+  return (
+    <SessionContext.Provider value={{ ...sessionState, refetch: clearCacheAndRefetch }}>
+      {children}
+    </SessionContext.Provider>
+  );
+}

@@ -28,7 +28,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import prisma from '@/core/database/prisma';
-import { verifyAccountToken } from '@/core/auth/decoder';
+import { verifyAccountToken } from '@/services/auth/account-token';
 
 type LogType = 'ai' | 'database' | 'validation' | 'auth' | 'unknown' | 'webhook';
 type ReportType = 'auto' | 'submitted';

@@ -1,10 +1,26 @@
-// Client-side navigation helpers.
-// Use redirectInApp for in-app navigation via the Next.js router.
-// Use redirectInDomain for same-origin hard navigation.
-// Use redirectHttps / redirectHttp for external URLs.
+/*
+::neup.documentation::core-navigation-helpers
+::title Navigation Helpers
 
-import { getFlowParams, appendFlowParamsObject } from '@/core/auth/callbacks';
-import { appendApplicationRootMode } from '@/core/helpers/application-mode';
+Client-side navigation helpers for in-app redirects, sticky query preservation, and back-history navigation.
+
+::public
+
+Use `redirectInApp`, `redirectInDomain`, `redirectHttps`, and `redirectHttp` for client navigation. Use `writeHistory`, `readHistory`, `hasBackHistory`, and `goBack` to track and resolve in-app back navigation through session storage.
+
+::public end
+
+::private
+
+Back-navigation history is stored in browser session storage under `back:history`, and `goBack()` removes the current entry before navigating to the previous recorded path.
+
+::private end
+
+::end
+*/
+
+import { getFlowParams, appendFlowParamsObject } from '@/inapp/auth/callbacks';
+import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
 
 type RouterNavigationOptions = {
   scroll?: boolean;
@@ -26,6 +42,58 @@ type BrowserRedirectOptions = {
 };
 
 const STICKY_QUERY_KEYS = ['workingProfile'] as const;
+const BACK_HISTORY_STORAGE_KEY = 'back:history';
+const MAX_HISTORY_ENTRIES = 50;
+
+function getCurrentInAppPath() {
+  if (typeof window === 'undefined') return '/';
+  return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+}
+
+function normalizeHistoryEntry(entry: unknown): string | null {
+  if (typeof entry !== 'string') return null;
+  const normalized = entry.trim();
+  return normalized ? normalized : null;
+}
+
+function persistHistory(history: string[]) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.setItem(BACK_HISTORY_STORAGE_KEY, JSON.stringify(history));
+  } catch {
+    // Ignore sessionStorage write failures.
+  }
+}
+
+function mergeBackParams(
+  targetPath: string,
+  withParam: boolean,
+  withAllParam: boolean,
+  withWhatParams: string[],
+) {
+  if (!withParam || typeof window === 'undefined') {
+    return targetPath;
+  }
+
+  const currentUrl = new URL(window.location.href);
+  const targetUrl = new URL(targetPath, window.location.origin);
+
+  if (withAllParam) {
+    currentUrl.searchParams.forEach((value, key) => {
+      targetUrl.searchParams.set(key, value);
+    });
+  } else {
+    withWhatParams.forEach((key) => {
+      const value = currentUrl.searchParams.get(key);
+      if (value !== null) {
+        targetUrl.searchParams.set(key, value);
+      }
+    });
+  }
+
+  return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+}
 
 export function appendStickyQueryParams(targetHref: string, currentParams: URLSearchParams) {
   const [basePath, existingQuery = ''] = targetHref.split('?');
@@ -40,6 +108,65 @@ export function appendStickyQueryParams(targetHref: string, currentParams: URLSe
 
   const query = nextParams.toString();
   return query ? `${basePath}?${query}` : basePath;
+}
+
+export function readHistory(): string[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = window.sessionStorage.getItem(BACK_HISTORY_STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map(normalizeHistoryEntry)
+      .filter((entry): entry is string => Boolean(entry));
+  } catch {
+    return [];
+  }
+}
+
+export function writeHistory(path?: string) {
+  if (typeof window === 'undefined') return;
+
+  const nextPath = normalizeHistoryEntry(path ?? getCurrentInAppPath());
+  if (!nextPath) return;
+
+  const history = readHistory();
+  if (history[history.length - 1] === nextPath) return;
+
+  persistHistory([...history, nextPath].slice(-MAX_HISTORY_ENTRIES));
+}
+
+export function hasBackHistory(): boolean {
+  return readHistory().length > 1;
+}
+
+export function goBack(
+  withParam: boolean,
+  withAllParam: boolean = true,
+  withWhatParams: string[] = [],
+): boolean {
+  if (typeof window === 'undefined') return false;
+
+  const history = readHistory();
+  if (history.length < 2) {
+    return false;
+  }
+
+  const updatedHistory = history.slice(0, -1);
+  const previousPath = updatedHistory[updatedHistory.length - 1];
+  if (!previousPath) {
+    return false;
+  }
+
+  persistHistory(updatedHistory);
+
+  const finalPath = mergeBackParams(previousPath, withParam, withAllParam, withWhatParams);
+  window.location.assign(finalPath);
+  return true;
 }
 
 // Performs a hard browser navigation using window.location.

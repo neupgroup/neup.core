@@ -31,7 +31,7 @@ import {
   PROFILE_INFO_KEY,
   setSessionData,
 } from '@/inapp/auth/storage';
-import { checkSession } from '@/logica/account/check';
+import { checkSession } from '@/services/account/check';
 import { type UserProfile, getUserProfile as fetchUserProfile } from '@/services/user';
 
 type SessionState = {

@@ -12,7 +12,7 @@ Use `redirectInApp`, `redirectInDomain`, `redirectHttps`, and `redirectHttp` for
 
 ::private
 
-Back-navigation history is stored in browser session storage under `back:history`, and `goBack()` removes the current entry before navigating to the previous recorded path.
+Back-navigation history is stored in browser session storage under `back:history`, and `goBack()` removes the current entry before navigating to the previous recorded URL.
 
 ::private end
 
@@ -45,15 +45,25 @@ const STICKY_QUERY_KEYS = ['workingProfile'] as const;
 const BACK_HISTORY_STORAGE_KEY = 'back:history';
 const MAX_HISTORY_ENTRIES = 50;
 
-function getCurrentInAppPath() {
+function getCurrentInAppUrl() {
   if (typeof window === 'undefined') return '/';
-  return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  return window.location.href;
 }
 
 function normalizeHistoryEntry(entry: unknown): string | null {
   if (typeof entry !== 'string') return null;
   const normalized = entry.trim();
-  return normalized ? normalized : null;
+  if (!normalized) return null;
+
+  if (typeof window === 'undefined') {
+    return normalized;
+  }
+
+  try {
+    return new URL(normalized, window.location.href).toString();
+  } catch {
+    return null;
+  }
 }
 
 function persistHistory(history: string[]) {
@@ -92,7 +102,7 @@ function mergeBackParams(
     });
   }
 
-  return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+  return targetUrl.toString();
 }
 
 export function appendStickyQueryParams(targetHref: string, currentParams: URLSearchParams) {
@@ -131,7 +141,7 @@ export function readHistory(): string[] {
 export function writeHistory(path?: string) {
   if (typeof window === 'undefined') return;
 
-  const nextPath = normalizeHistoryEntry(path ?? getCurrentInAppPath());
+  const nextPath = normalizeHistoryEntry(path ?? getCurrentInAppUrl());
   if (!nextPath) return;
 
   const history = readHistory();

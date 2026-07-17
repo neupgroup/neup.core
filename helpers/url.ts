@@ -1,5 +1,3 @@
-import { headers } from 'next/headers';
-
 /*
 ::neup.documentation::core-helper-url
 ::title URL Helper
@@ -116,6 +114,7 @@ export async function getUrlParam(
     return normalizedExplicitValue;
   }
 
+  const { headers } = await import('next/headers');
   const requestHeaders = await headers();
 
   for (const headerName of getParamHeaderCandidates(name)) {
@@ -139,6 +138,7 @@ export async function getUrlParams(
 }
 
 export async function getRequestProtocol(): Promise<'http' | 'https'> {
+  const { headers } = await import('next/headers');
   const requestHeaders = await headers();
   const forwardedProto = normalizeParamValue(requestHeaders.get('x-forwarded-proto'));
 

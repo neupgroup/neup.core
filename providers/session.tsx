@@ -14,7 +14,7 @@ This module exposes `SessionProvider` and `useSession()` so client components ca
 
 ::private
 
-The provider accepts the server-rendered account snapshot from the root layout, caches it in session storage for client navigation, and can refresh from `/api/auth/me` without importing service-layer modules into `core`.
+The provider accepts the server-rendered account snapshot from the root layout, caches it in session storage for client navigation, and can refresh from `/bridge/api.v1/auth/me` without importing service-layer modules into `core`.
 
 ::private end
 
@@ -22,6 +22,7 @@ The provider accepts the server-rendered account snapshot from the root layout, 
 */
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { APP_BASE_PATH } from "@/core/appconfig";
 
 export type SessionUser = {
   accountId?: string | null;
@@ -43,6 +44,7 @@ type SessionState = {
 };
 
 const SESSION_KEY = "neup_user";
+const SESSION_ENDPOINT = `${APP_BASE_PATH}/bridge/api.v1/auth/me`;
 
 const SessionContext = createContext<SessionState | undefined>(undefined);
 
@@ -137,7 +139,7 @@ export function SessionProvider({
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/me", {
+      const response = await fetch(SESSION_ENDPOINT, {
         cache: "no-store",
         credentials: "include",
       });

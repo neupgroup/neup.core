@@ -8,6 +8,9 @@ Shared helpers for request URL construction, URL query extraction, request proto
 
 Use `normalizeUrl()` for persisted profile or asset URLs that may be entered without a protocol.
 
+Use `makeUrl()` to combine a base URL and endpoint while preserving the base
+path by default.
+
 Use `buildPublicAppUrl()` and `getPublicAppOrigin()` for public app URLs derived from request headers.
 
 ::public end
@@ -53,6 +56,55 @@ export function normalizeUrl(value: string): string {
   }
 
   return `https://${trimmed}`;
+}
+
+/**
+ * ::neup.documentation::core-helper-url-make-url
+ * ::function makeUrl(basePath, endpoint, preservePath, preserveParameters)
+ *
+ * Builds a URL from a base URL and endpoint.
+ *
+ * ::public
+ *
+ * `preservePath` defaults to `true`, so base paths such as `/estate` are kept
+ * when the endpoint starts with `/`.
+ *
+ * `preserveParameters` defaults to `false`. When set to `true`, query
+ * parameters from the base URL are preserved and endpoint parameters override
+ * matching base parameters.
+ *
+ * ::public end
+ *
+ * ::end
+ */
+export function makeUrl(
+  basePath: string,
+  endpoint: string,
+  preservePath = true,
+  preserveParameters = false,
+): URL {
+  const baseUrl = new URL(basePath);
+  const endpointUrl = new URL(endpoint, baseUrl.origin);
+  const baseUrlPath = preservePath ? baseUrl.pathname.replace(/\/+$/, '') : '';
+  const endpointPath = endpointUrl.pathname.replace(/^\/+/, '');
+
+  baseUrl.pathname = [baseUrlPath, endpointPath].filter(Boolean).join('/');
+
+  const nextSearchParams = new URLSearchParams();
+  if (preserveParameters) {
+    for (const [key, value] of baseUrl.searchParams.entries()) {
+      nextSearchParams.append(key, value);
+    }
+  }
+
+  for (const [key, value] of endpointUrl.searchParams.entries()) {
+    nextSearchParams.set(key, value);
+  }
+
+  baseUrl.search = nextSearchParams.toString();
+  baseUrl.hash = endpointUrl.hash;
+
+  return baseUrl;
 }
 
 export function getPublicAppOrigin(request?: RequestLike): string {

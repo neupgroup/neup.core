@@ -19,9 +19,6 @@ Back-navigation history is stored in browser session storage under `back:history
 ::end
 */
 
-import { getFlowParams, appendFlowParamsObject } from '@/inapp/auth/callbacks';
-import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
-
 type RouterNavigationOptions = {
   scroll?: boolean;
 };
@@ -42,8 +39,52 @@ type BrowserRedirectOptions = {
 };
 
 const STICKY_QUERY_KEYS = ['workingProfile'] as const;
+const FLOW_QUERY_KEYS = ['backs', 'backsTo', 'steps'] as const;
 const BACK_HISTORY_STORAGE_KEY = 'back:history';
 const MAX_HISTORY_ENTRIES = 50;
+
+type FlowParams = Partial<Record<(typeof FLOW_QUERY_KEYS)[number], string>>;
+
+function splitHref(href: string) {
+  const hashIndex = href.indexOf('#');
+  const beforeHash = hashIndex === -1 ? href : href.slice(0, hashIndex);
+  const hash = hashIndex === -1 ? '' : href.slice(hashIndex);
+  const queryIndex = beforeHash.indexOf('?');
+
+  return {
+    basePath: queryIndex === -1 ? beforeHash : beforeHash.slice(0, queryIndex),
+    query: queryIndex === -1 ? '' : beforeHash.slice(queryIndex + 1),
+    hash,
+  };
+}
+
+export function getFlowParams(params: URLSearchParams): FlowParams {
+  const flowParams: FlowParams = {};
+
+  for (const key of FLOW_QUERY_KEYS) {
+    const value = params.get(key);
+    if (value) {
+      flowParams[key] = value;
+    }
+  }
+
+  return flowParams;
+}
+
+export function appendFlowParamsObject(href: string, flowParams: FlowParams): string {
+  const { basePath, query, hash } = splitHref(href);
+  const nextParams = new URLSearchParams(query);
+
+  for (const key of FLOW_QUERY_KEYS) {
+    const value = flowParams[key];
+    if (value && !nextParams.has(key)) {
+      nextParams.set(key, value);
+    }
+  }
+
+  const nextQuery = nextParams.toString();
+  return `${basePath}${nextQuery ? `?${nextQuery}` : ''}${hash}`;
+}
 
 function getCurrentInAppUrl() {
   if (typeof window === 'undefined') return '/';
@@ -106,8 +147,8 @@ function mergeBackParams(
 }
 
 export function appendStickyQueryParams(targetHref: string, currentParams: URLSearchParams) {
-  const [basePath, existingQuery = ''] = targetHref.split('?');
-  const nextParams = new URLSearchParams(existingQuery);
+  const { basePath, query, hash } = splitHref(targetHref);
+  const nextParams = new URLSearchParams(query);
 
   for (const key of STICKY_QUERY_KEYS) {
     const value = currentParams.get(key);
@@ -116,8 +157,8 @@ export function appendStickyQueryParams(targetHref: string, currentParams: URLSe
     }
   }
 
-  const query = nextParams.toString();
-  return query ? `${basePath}?${query}` : basePath;
+  const nextQuery = nextParams.toString();
+  return `${basePath}${nextQuery ? `?${nextQuery}` : ''}${hash}`;
 }
 
 export function readHistory(): string[] {
@@ -230,10 +271,7 @@ export function redirectInApp(router: AppRouterLike, href: string, options: AppR
   // Preserve backsTo and steps params if requested (default: true)
   if (preserveFlowParams && currentParams) {
     const flowParams = getFlowParams(currentParams);
-    finalHref = appendApplicationRootMode(
-      appendFlowParamsObject(href, flowParams),
-      currentParams.get('mode'),
-    );
+    finalHref = appendFlowParamsObject(href, flowParams);
   }
 
   if (currentParams) {

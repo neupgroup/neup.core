@@ -1,6 +1,5 @@
 import { APP_BASE_PATH } from '@/core/appconfig';
-import { getFlowParams, appendFlowParamsObject } from '@/inapp/auth/callbacks';
-import { appendApplicationRootMode } from '@/app/(manage)/application/_lib/application-mode';
+import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '@/core/helpers/navigation';
 
 type RouterLike = {
     push: (href: string, options?: { scroll?: boolean }) => void;
@@ -13,23 +12,6 @@ type RedirectOptions = {
     scroll?: boolean;
     preserveFlowParams?: boolean; // Whether to preserve backsTo and steps params (default: true)
 };
-
-const STICKY_QUERY_KEYS = ['workingProfile'] as const;
-
-function appendStickyQueryParams(path: string, currentParams: URLSearchParams): string {
-    const [basePath, existingQuery = ''] = path.split('?');
-    const nextParams = new URLSearchParams(existingQuery);
-
-    for (const key of STICKY_QUERY_KEYS) {
-        const value = currentParams.get(key);
-        if (value && !nextParams.has(key)) {
-            nextParams.set(key, value);
-        }
-    }
-
-    const query = nextParams.toString();
-    return query ? `${basePath}?${query}` : basePath;
-}
 
 /**
  * Resolves a path to include the base path for hard (window.location) navigation.
@@ -70,10 +52,7 @@ export function redirectInApp(
     if (preserveFlowParams && typeof window !== 'undefined') {
         const currentParams = new URLSearchParams(window.location.search);
         const flowParams = getFlowParams(currentParams);
-        finalPath = appendApplicationRootMode(
-            appendFlowParamsObject(path, flowParams),
-            currentParams.get('mode'),
-        );
+        finalPath = appendFlowParamsObject(path, flowParams);
         finalPath = appendStickyQueryParams(finalPath, currentParams);
     } else if (typeof window !== 'undefined') {
         finalPath = appendStickyQueryParams(finalPath, new URLSearchParams(window.location.search));

@@ -2,22 +2,24 @@
 ::neup.documentation::core-navigation-helpers
 ::title Navigation Helpers
 
-Client-side navigation helpers for in-app redirects, sticky query preservation, and back-history navigation.
+Client-side navigation helpers for in-app redirects, sticky query preservation, path-derived back navigation, and legacy back-history navigation.
 
 ::public
 
-Use `redirectInApp`, `redirectInDomain`, `redirectHttps`, and `redirectHttp` for client navigation. Use `writeHistory`, `readHistory`, `hasBackHistory`, and `goBack` to track and resolve in-app back navigation through session storage.
+Use `redirectInApp`, `redirectInDomain`, `redirectHttps`, and `redirectHttp` for client navigation. Use `resolveBackNavigationHref` for raw-path back navigation.
 
 ::public end
 
 ::private
 
-Back-navigation history is stored in browser session storage under `back:history`, and `goBack()` removes the current entry before navigating to the previous recorded URL.
+Legacy back-navigation history is still available for older callers, but the shared back button resolves its target from the current raw path and optional `backsTo` values instead of browser session storage.
 
 ::private end
 
 ::end
 */
+
+import { APP_BASE_PATH } from '@/core/appconfig';
 
 type RouterNavigationOptions = {
   scroll?: boolean;
@@ -42,6 +44,31 @@ const STICKY_QUERY_KEYS = ['workingProfile'] as const;
 const FLOW_QUERY_KEYS = ['backs', 'backsTo', 'steps'] as const;
 const BACK_HISTORY_STORAGE_KEY = 'back:history';
 const MAX_HISTORY_ENTRIES = 50;
+const NORMALIZED_APP_BASE_PATH = APP_BASE_PATH.replace(/\/$/, '');
+
+export type NavigationBackTargetConfig = {
+  prefix: string;
+  basePath: string;
+  origin?: string;
+};
+
+export type NavigationBackTargets = Record<string, NavigationBackTargetConfig>;
+
+export const CORE_NAVIGATION_BACK_TARGETS: NavigationBackTargets = {
+  inapp: {
+    prefix: '__inapp__',
+    basePath: APP_BASE_PATH,
+  },
+};
+
+type BackNavigationInput = {
+  backsTo?: string | null;
+  currentPathname: string;
+  currentSearch?: string | null;
+  currentHash?: string | null;
+  targets?: NavigationBackTargets;
+  defaultTarget?: string;
+};
 
 type FlowParams = Partial<Record<(typeof FLOW_QUERY_KEYS)[number], string>>;
 
@@ -56,6 +83,103 @@ function splitHref(href: string) {
     query: queryIndex === -1 ? '' : beforeHash.slice(queryIndex + 1),
     hash,
   };
+}
+
+function withLeadingSlash(value: string) {
+  if (!value) return '/';
+  return value.startsWith('/') ? value : `/${value}`;
+}
+
+function trimTrailingSlash(value: string) {
+  if (value === '/') return value;
+  return value.replace(/\/+$/, '');
+}
+
+function splitBackTarget(value: string, targets: NavigationBackTargets): { target: string; href: string } | null {
+  const trimmed = value.trim();
+
+  for (const target of Object.keys(targets)) {
+    const prefix = targets[target]?.prefix;
+    if (!trimmed.startsWith(prefix)) continue;
+
+    let href = trimmed.slice(prefix.length).trim();
+    if (href.startsWith(':')) {
+      href = href.slice(1).trim();
+    }
+
+    return { target, href };
+  }
+
+  return null;
+}
+
+function appendBasePath(basePath: string, href: string) {
+  const normalizedBase = trimTrailingSlash(withLeadingSlash(basePath));
+  const normalizedHref = withLeadingSlash(href);
+
+  if (normalizedHref === normalizedBase || normalizedHref.startsWith(`${normalizedBase}/`)) {
+    return normalizedHref;
+  }
+
+  return `${normalizedBase}${normalizedHref}`;
+}
+
+function resolveTargetHref(target: NavigationBackTargetConfig, href: string) {
+  const path = appendBasePath(target.basePath, href);
+
+  if (target.origin) {
+    return new URL(path, target.origin).toString();
+  }
+
+  return path;
+}
+
+function resolveExplicitBackTarget(value: string, targets: NavigationBackTargets, defaultTarget: string) {
+  const prefixedTarget = splitBackTarget(value, targets);
+  if (prefixedTarget) {
+    const target = targets[prefixedTarget.target];
+    if (target) {
+      return resolveTargetHref(target, prefixedTarget.href);
+    }
+  }
+
+  if (/^https?:\/\//i.test(value) || value.startsWith('//')) {
+    return value;
+  }
+
+  const fallbackTarget = targets[defaultTarget] ?? CORE_NAVIGATION_BACK_TARGETS.inapp;
+  return resolveTargetHref(fallbackTarget, value);
+}
+
+export function resolvePreviousRawPath(pathname: string, search?: string | null, hash?: string | null) {
+  const normalizedPathname = trimTrailingSlash(withLeadingSlash(pathname || '/'));
+  const normalizedHash = hash ?? '';
+
+  if (search) {
+    return `${normalizedPathname}${normalizedHash}`;
+  }
+
+  if (normalizedPathname === '/') {
+    return '/';
+  }
+
+  const parts = normalizedPathname.split('/').filter(Boolean);
+  parts.pop();
+
+  return parts.length > 0 ? `/${parts.join('/')}` : '/';
+}
+
+export function resolveBackNavigationHref(input: BackNavigationInput) {
+  const targets = input.targets ?? CORE_NAVIGATION_BACK_TARGETS;
+  const defaultTarget = input.defaultTarget ?? 'inapp';
+  const explicitTarget = input.backsTo?.trim();
+
+  if (explicitTarget) {
+    return resolveExplicitBackTarget(explicitTarget, targets, defaultTarget);
+  }
+
+  const fallbackTarget = targets[defaultTarget] ?? CORE_NAVIGATION_BACK_TARGETS.inapp;
+  return resolveTargetHref(fallbackTarget, resolvePreviousRawPath(input.currentPathname, input.currentSearch, input.currentHash));
 }
 
 export function getFlowParams(params: URLSearchParams): FlowParams {
@@ -91,6 +215,30 @@ function getCurrentInAppUrl() {
   return window.location.href;
 }
 
+function isInAppPathname(pathname: string): boolean {
+  if (!NORMALIZED_APP_BASE_PATH) return true;
+  return pathname === NORMALIZED_APP_BASE_PATH || pathname.startsWith(`${NORMALIZED_APP_BASE_PATH}/`);
+}
+
+function resolveInAppBasePathUrl(value: string): string {
+  if (typeof window === 'undefined' || !NORMALIZED_APP_BASE_PATH) return value;
+
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.startsWith('#')) return value;
+
+  try {
+    const url = new URL(trimmed, window.location.href);
+    if (url.origin !== window.location.origin || isInAppPathname(url.pathname)) {
+      return url.toString();
+    }
+
+    url.pathname = `${NORMALIZED_APP_BASE_PATH}${url.pathname.startsWith('/') ? url.pathname : `/${url.pathname}`}`;
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
 function normalizeHistoryEntry(entry: unknown): string | null {
   if (typeof entry !== 'string') return null;
   const normalized = entry.trim();
@@ -101,7 +249,7 @@ function normalizeHistoryEntry(entry: unknown): string | null {
   }
 
   try {
-    return new URL(normalized, window.location.href).toString();
+    return resolveInAppBasePathUrl(normalized);
   } catch {
     return null;
   }
@@ -215,7 +363,7 @@ export function goBack(
 
   persistHistory(updatedHistory);
 
-  const finalPath = mergeBackParams(previousPath, withParam, withAllParam, withWhatParams);
+  const finalPath = resolveInAppBasePathUrl(mergeBackParams(previousPath, withParam, withAllParam, withWhatParams));
   window.location.assign(finalPath);
   return true;
 }

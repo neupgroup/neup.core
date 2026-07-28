@@ -1,6 +1,8 @@
 // General utility helpers used across the UI layer.
 
+// Getting error importing, run "npm install clsx"
 import { clsx, type ClassValue } from "clsx"
+// Getting error importing, run "npm install tailwind-merge"
 import { twMerge } from "tailwind-merge"
 
 // Merges Tailwind CSS class names, resolving conflicts via tailwind-merge

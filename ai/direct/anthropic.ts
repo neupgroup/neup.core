@@ -6,7 +6,7 @@ Calls the Anthropic Messages API directly.
 
 ::public
 
-Use `requestAnthropicCompletion()` to send a normalized AI request to Anthropic models without Genkit.
+Use `requestAnthropicCompletion()` to send a normalized AI request to Anthropic models directly.
 
 ::public end
 
@@ -19,7 +19,7 @@ System prompts are lifted out of the shared message array into Anthropic's top-l
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/googleai';
+import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/types';
 
 export async function requestAnthropicCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
   const system = input.messages

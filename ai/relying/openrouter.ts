@@ -19,7 +19,7 @@ Optional site headers are forwarded when configured so OpenRouter requests can b
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/googleai';
+import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/types';
 
 export async function requestOpenRouterCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

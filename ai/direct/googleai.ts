@@ -21,23 +21,7 @@ This client maps the shared AI message format into Gemini `contents` plus option
 ::end
 */
 
-export type DirectAiMessage = {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-};
-
-export type DirectAiRequest = {
-  apiKey: string;
-  model: string;
-  messages: DirectAiMessage[];
-  temperature?: number;
-  maxTokens?: number;
-};
-
-export type DirectAiResult = {
-  text: string;
-  raw: unknown;
-};
+import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/types';
 
 export async function requestGoogleAiCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
   const systemMessage = input.messages.find((message) => message.role === 'system')?.content?.trim();

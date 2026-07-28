@@ -19,7 +19,7 @@ The client prefers the `output_text` field when available and falls back to conc
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/googleai';
+import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/types';
 
 export async function requestOpenAiCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
   const response = await fetch('https://api.openai.com/v1/responses', {

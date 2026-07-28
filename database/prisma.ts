@@ -23,10 +23,12 @@ The delegate guard rebuilds the cached client when the generated Prisma client s
 ::end
 */
 
-
 import { Pool } from 'pg'
 // Missing module fix: npm install @prisma/adapter-pg@5.22.0
 import { PrismaPg } from '@prisma/adapter-pg'
+// Import the generated Prisma client from the project-local alias
+// If getting error, create index.ts in prisma/client and use this code in the index.ts
+// export * from './client'
 import { PrismaClient } from '@/prisma/client'
 export { Prisma } from '@/prisma/client'
 export type * from '@/prisma/client'
@@ -40,29 +42,13 @@ const prismaClientSingleton = () => {
   return new PrismaClient({ adapter })
 }
 
-function hasRequiredDelegates(client: ReturnType<typeof prismaClientSingleton> | undefined): boolean {
-  if (!client) return false
-
-  const candidate = client as any
-  return Boolean(
-    candidate.portfolio &&
-    candidate.portfolioAsset &&
-    candidate.member &&
-    (candidate.authnSession || candidate.authSession) &&
-    (candidate.authnRequest || candidate.authRequest) &&
-    (candidate.authnMethod || candidate.authMethod) &&
-    (candidate.member || candidate.portfolioRole) &&
-    candidate.systemConfig,
-  )
-}
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>
 
 declare global {
-  var prisma: undefined | ReturnType<typeof prismaClientSingleton>
+  var prisma: PrismaClientSingleton
 }
 
-export const prisma = hasRequiredDelegates(globalThis.prisma)
-  ? globalThis.prisma!
-  : prismaClientSingleton()
+export const prisma = globalThis.prisma ?? prismaClientSingleton()
 
 export default prisma
 

@@ -21,7 +21,6 @@ Callers own endpoint paths, base URLs, credentials, and response contracts.
 */
 
 import { makeUrl } from '@/core/helpers/link/url';
-import { logger } from '@/core/logger';
 
 export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -123,11 +122,6 @@ export async function runApi<TBody = unknown>(
   const method = options.method ?? 'GET';
   const url = createApiUrl(options.baseUrl, options.path, options.query);
   const headers = new Headers(options.headers);
-
-  logger({ mode: 'development' }, '[api] making request', {
-    method,
-    url,
-  });
 
   if (options.bearerToken?.trim()) {
     headers.set('authorization', `Bearer ${options.bearerToken.trim()}`);

@@ -1,5 +1,26 @@
+/*
+::neup.documentation::core-link-redirect-helper
+::title Link Redirect Helper
+
+Provides app redirect helpers that preserve navigation query context while routing through Next.js or browser navigation.
+
+::public
+
+Use `redirectInApp()` when a client flow needs to move to another app path while preserving flow and sticky query parameters.
+
+::public end
+
+::private
+
+This helper delegates query preservation to `core/helpers/link/navigation` and only handles redirect mechanics.
+
+::private end
+
+::end
+*/
+
 import { APP_BASE_PATH } from '@/core/appconfig';
-import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '@/core/helpers/navigation';
+import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '@/core/helpers/link/navigation';
 
 type RouterLike = {
     push: (href: string, options?: { scroll?: boolean }) => void;

@@ -26,12 +26,15 @@ The delegate guard rebuilds the cached client when the generated Prisma client s
 import { Pool } from 'pg'
 // Missing module fix: npm install @prisma/adapter-pg@5.22.0
 import { PrismaPg } from '@prisma/adapter-pg'
+import { ensureDatabaseRequirements } from '@/core/database/requirements'
 // Import the generated Prisma client from the project-local alias
 // If getting error, create index.ts in prisma/client and use this code in the index.ts
 // export * from './client'
 import { PrismaClient } from '@/prisma/client'
 export { Prisma } from '@/prisma/client'
 export type * from '@/prisma/client'
+
+ensureDatabaseRequirements()
 
 const connectionString = process.env.DATABASE_URL
 

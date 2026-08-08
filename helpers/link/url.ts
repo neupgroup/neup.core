@@ -30,12 +30,28 @@ type RequestLike = {
   headers?: { get(name: string): string | null };
 };
 
+type UrlParamValue = string | number | boolean | null | undefined;
+
 const DEFAULT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://neupgroup.com/estate';
 const DEFAULT_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '/estate';
 
 function normalizeBasePath(basePath: string): string {
   if (!basePath) return '';
   return basePath.startsWith('/') ? basePath.replace(/\/$/, '') : `/${basePath.replace(/\/$/, '')}`;
+}
+
+function normalizeCustomPath(path: string): string {
+  if (!path) return '/';
+  return path.startsWith('/') ? path : `/${path}`;
+}
+
+function isAbsoluteUrl(value: string): boolean {
+  return /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(value);
+}
+
+function combineRelativePaths(basePath: string, customPath: string): string {
+  const url = makeUrl(`https://app.local${normalizeBasePath(basePath)}`, normalizeCustomPath(customPath));
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 function getForwardedValue(value: string | null | undefined): string | null {
@@ -105,6 +121,134 @@ export function makeUrl(
   baseUrl.hash = endpointUrl.hash;
 
   return baseUrl;
+}
+
+export class UrlBuilder {
+  private readonly initialValue: string | null;
+  private basePath: string | null;
+  private customPath: string | null;
+  private readonly params = new URLSearchParams();
+  private hasSetBasePath = false;
+  private hasAddedCustomPath = false;
+  private hasResolved = false;
+
+  constructor(path?: string, base?: string) {
+    this.initialValue = path?.trim() || null;
+    this.basePath = base?.trim() || null;
+    this.customPath = null;
+
+    if (this.initialValue && !isAbsoluteUrl(this.initialValue) && !this.basePath) {
+      this.customPath = this.initialValue;
+    }
+  }
+
+  setBasePath(basePath: string | null | undefined): this {
+    if (this.hasSetBasePath) {
+      throw new Error('setBasePath() can only be called once per url() builder.');
+    }
+
+    this.hasSetBasePath = true;
+    const trimmed = basePath?.trim();
+    this.basePath = trimmed || null;
+    return this;
+  }
+
+  addCustomPath(path: string | null | undefined): this {
+    if (this.hasAddedCustomPath) {
+      throw new Error('addCustomPath() can only be called once per url() builder.');
+    }
+
+    this.hasAddedCustomPath = true;
+    const trimmed = path?.trim();
+    if (!trimmed) return this;
+
+    this.customPath = this.customPath
+      ? combineRelativePaths(this.customPath, trimmed)
+      : normalizeCustomPath(trimmed);
+
+    return this;
+  }
+
+  addParam(name: string, value: UrlParamValue): this {
+    if (value === null || value === undefined || value === '') {
+      return this;
+    }
+
+    this.params.set(name, String(value));
+    return this;
+  }
+
+  addParams(name: string, value: UrlParamValue): this {
+    return this.addParam(name, value);
+  }
+
+  removeParam(name: string): this {
+    this.params.delete(name);
+    return this;
+  }
+
+  toURL(): URL {
+    const resolvedValue = this.resolveValue();
+    const nextUrl = isAbsoluteUrl(resolvedValue)
+      ? new URL(resolvedValue)
+      : new URL(resolvedValue, 'https://app.local');
+
+    for (const [key, value] of this.params.entries()) {
+      nextUrl.searchParams.set(key, value);
+    }
+
+    return nextUrl;
+  }
+
+  toString(): string {
+    return this.get();
+  }
+
+  get(): string {
+    if (this.hasResolved) {
+      throw new Error('get() can only be called once per url() builder.');
+    }
+
+    this.hasResolved = true;
+    const nextUrl = this.toURL();
+    const resolvedValue = this.resolveValue();
+
+    if (isAbsoluteUrl(resolvedValue)) {
+      return nextUrl.toString();
+    }
+
+    return `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+  }
+
+  private resolveValue(): string {
+    if (this.initialValue && isAbsoluteUrl(this.initialValue)) {
+      return this.customPath
+        ? makeUrl(this.initialValue, this.customPath).toString()
+        : this.initialValue;
+    }
+
+    if (this.basePath && isAbsoluteUrl(this.basePath)) {
+      return makeUrl(this.basePath, this.customPath ?? this.initialValue ?? '/').toString();
+    }
+
+    if (this.basePath) {
+      return combineRelativePaths(this.basePath, this.customPath ?? this.initialValue ?? '/');
+    }
+
+    if (this.customPath) {
+      return this.customPath;
+    }
+
+    if (this.initialValue) {
+      return this.initialValue;
+    }
+
+    return '/';
+  }
+}
+
+export function url(path?: string, base?: string): UrlBuilder {
+  return new UrlBuilder(path, base);
 }
 
 export function getPublicAppOrigin(request?: RequestLike): string {

@@ -20,7 +20,7 @@ Callers own endpoint paths, base URLs, credentials, and response contracts.
 ::end
 */
 
-import { makeUrl } from '@/core/helpers/link/url';
+import { makeUrl, url } from '@/core/helpers/link/url';
 
 export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -60,16 +60,17 @@ export type ApiRequestOptions = {
  * ::end
  */
 export function createApiUrl(baseUrl: string, path: string, query?: ApiQuery): string {
-  const url = makeUrl(baseUrl, path);
+  const nextUrl = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(path)
+    ? url(path)
+    : makeUrl(baseUrl, path);
 
   if (query) {
     for (const [key, value] of Object.entries(query)) {
-      if (value === null || value === undefined || value === '') continue;
-      url.searchParams.set(key, String(value));
+      nextUrl.addParams(key, value);
     }
   }
 
-  return url.toString();
+  return nextUrl.get();
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

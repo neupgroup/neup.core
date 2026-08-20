@@ -32,8 +32,11 @@ type RequestLike = {
 
 type UrlParamValue = string | number | boolean | null | undefined;
 
-const DEFAULT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://neupgroup.com/estate';
-const DEFAULT_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '/estate';
+const DEFAULT_BASE_PATH =
+  process.env.NEXT_PUBLIC_APP_BASEPATH ??
+  process.env.APP_BASEPATH ??
+  '/analytics';
+const DEFAULT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? `https://neupgroup.com${DEFAULT_BASE_PATH}`;
 
 function normalizeBasePath(basePath: string): string {
   if (!basePath) return '';
@@ -52,6 +55,24 @@ function isAbsoluteUrl(value: string): boolean {
 function combineRelativePaths(basePath: string, customPath: string): string {
   const url = makeUrl(`https://app.local${normalizeBasePath(basePath)}`, normalizeCustomPath(customPath));
   return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function applyDefaultBasePath(path: string): string {
+  const normalizedDefaultBasePath = normalizeBasePath(DEFAULT_BASE_PATH);
+  const normalizedPath = normalizeCustomPath(path);
+
+  if (!normalizedDefaultBasePath) {
+    return normalizedPath;
+  }
+
+  if (
+    normalizedPath === normalizedDefaultBasePath ||
+    normalizedPath.startsWith(`${normalizedDefaultBasePath}/`)
+  ) {
+    return normalizedPath;
+  }
+
+  return combineRelativePaths(normalizedDefaultBasePath, normalizedPath);
 }
 
 function getForwardedValue(value: string | null | undefined): string | null {
@@ -236,14 +257,14 @@ export class UrlBuilder {
     }
 
     if (this.customPath) {
-      return this.customPath;
+      return applyDefaultBasePath(this.customPath);
     }
 
     if (this.initialValue) {
-      return this.initialValue;
+      return applyDefaultBasePath(this.initialValue);
     }
 
-    return '/';
+    return applyDefaultBasePath('/');
   }
 }
 

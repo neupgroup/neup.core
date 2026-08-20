@@ -39,7 +39,11 @@ function isAbsoluteUrl(value: string): boolean {
     return /^https?:\/\//i.test(value);
 }
 
-export const APP_BASE_PATH = normalizeBasePath(process.env.APP_BASEPATH) ?? '';
+const CONFIGURED_BASE_PATH =
+    process.env.NEXT_PUBLIC_APP_BASEPATH ||
+    process.env.APP_BASEPATH;
+
+export const APP_BASE_PATH = normalizeBasePath(CONFIGURED_BASE_PATH) ?? '';
 
 export const APP_DOMAIN =
     process.env.NEXT_PUBLIC_APP_DOMAIN ||
@@ -49,7 +53,7 @@ export const APP_DOMAIN =
  * Returns the base path from APP_BASEPATH, or null when it is unset/empty.
  */
 export function getBasePath(): string | null {
-    return normalizeBasePath(process.env.APP_BASEPATH);
+    return normalizeBasePath(CONFIGURED_BASE_PATH);
 }
 
 /**

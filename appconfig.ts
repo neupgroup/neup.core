@@ -35,6 +35,24 @@ function normalizePath(path: string): string {
     return path.startsWith('/') ? path : `/${path}`;
 }
 
+function collapseRepeatedBasePath(path: string, basePath: string): string {
+    if (!basePath) return path;
+
+    let collapsedPath = path;
+    const repeatedBasePath = `${basePath}${basePath}`;
+
+    while (
+        collapsedPath === repeatedBasePath ||
+        collapsedPath.startsWith(`${repeatedBasePath}/`) ||
+        collapsedPath.startsWith(`${repeatedBasePath}?`) ||
+        collapsedPath.startsWith(`${repeatedBasePath}#`)
+    ) {
+        collapsedPath = `${basePath}${collapsedPath.slice(repeatedBasePath.length)}`;
+    }
+
+    return collapsedPath;
+}
+
 function isAbsoluteUrl(value: string): boolean {
     return /^https?:\/\//i.test(value);
 }
@@ -60,12 +78,13 @@ export function getBasePath(): string | null {
  * Returns an app-relative path using the provided base path, or APP_BASEPATH when omitted.
  */
 export function makeAppPath(path: string, basePath?: string | null): string {
-    const normalizedPath = normalizePath(path);
     const resolvedBasePath = typeof basePath === 'undefined' ? getBasePath() : basePath?.trim() || null;
 
     if (!resolvedBasePath) {
-        return normalizedPath;
+        return normalizePath(path);
     }
+
+    const normalizedPath = normalizePath(path);
 
     if (isAbsoluteUrl(resolvedBasePath)) {
         return makeUrl(resolvedBasePath, normalizedPath).toString();
@@ -76,7 +95,16 @@ export function makeAppPath(path: string, basePath?: string | null): string {
         return normalizedPath;
     }
 
-    const url = makeUrl(`https://app.local${normalizedBasePath}`, normalizedPath);
+    const collapsedPath = collapseRepeatedBasePath(normalizedPath, normalizedBasePath);
+
+    if (
+        collapsedPath === normalizedBasePath ||
+        collapsedPath.startsWith(`${normalizedBasePath}/`)
+    ) {
+        return collapsedPath;
+    }
+
+    const url = makeUrl(`https://app.local${normalizedBasePath}`, collapsedPath);
     return `${url.pathname}${url.search}${url.hash}`;
 }
 

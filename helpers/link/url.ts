@@ -57,9 +57,30 @@ function combineRelativePaths(basePath: string, customPath: string): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
+function collapseRepeatedBasePath(path: string, basePath: string): string {
+  if (!basePath) return path;
+
+  let collapsedPath = path;
+  const repeatedBasePath = `${basePath}${basePath}`;
+
+  while (
+    collapsedPath === repeatedBasePath ||
+    collapsedPath.startsWith(`${repeatedBasePath}/`) ||
+    collapsedPath.startsWith(`${repeatedBasePath}?`) ||
+    collapsedPath.startsWith(`${repeatedBasePath}#`)
+  ) {
+    collapsedPath = `${basePath}${collapsedPath.slice(repeatedBasePath.length)}`;
+  }
+
+  return collapsedPath;
+}
+
 function applyDefaultBasePath(path: string): string {
   const normalizedDefaultBasePath = normalizeBasePath(DEFAULT_BASE_PATH);
-  const normalizedPath = normalizeCustomPath(path);
+  const normalizedPath = collapseRepeatedBasePath(
+    normalizeCustomPath(path),
+    normalizedDefaultBasePath
+  );
 
   if (!normalizedDefaultBasePath) {
     return normalizedPath;

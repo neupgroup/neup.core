@@ -26,6 +26,7 @@ dependencies so it remains safe to import from route metadata code.
 
 import type { Metadata } from 'next';
 
+export const APP_NAME = 'Neup';
 export const DEFAULT_META_DESCRIPTION = 'Visually build your website.';
 export const DEFAULT_TITLE_SEPARATOR = ', ';
 
@@ -75,6 +76,16 @@ export function formatMetadataTitle(input: PageMetadataInput) {
   }
 
   return title ?? prefix ?? suffix ?? '';
+}
+
+export function formatAppTitle(...parts: Array<TitlePart>) {
+  return formatMetadataTitle({
+    titleKind: 'prefix-title-suffix',
+    separator: DEFAULT_TITLE_SEPARATOR,
+    prefix: parts[0],
+    title: parts[1],
+    suffix: parts.length > 2 ? parts.slice(2).filter(Boolean).join(DEFAULT_TITLE_SEPARATOR) : undefined,
+  }) || APP_NAME;
 }
 
 export function generatePageMetadata(input: PageMetadataInput): Metadata {

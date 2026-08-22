@@ -22,8 +22,9 @@ Core metadata stays generic and must not read cookies or application database ta
 */
 
 export {
-  APP_NAME,
   DEFAULT_META_DESCRIPTION,
+  DEFAULT_TITLE_SEPARATOR,
   formMetadata,
-  formatAppTitle,
+  formatMetadataTitle,
+  generatePageMetadata,
 } from '@/core/metadata';

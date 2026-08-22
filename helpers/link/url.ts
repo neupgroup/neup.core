@@ -24,6 +24,8 @@ Use `buildPublicAppUrl()` and `getPublicAppOrigin()` for public app URLs derived
 ::end
 */
 
+import { getEnvVariable } from '@/core/helpers/env';
+
 type RequestLike = {
   url?: string;
   nextUrl?: { href?: string; origin?: string; protocol?: string };
@@ -33,10 +35,9 @@ type RequestLike = {
 type UrlParamValue = string | number | boolean | null | undefined;
 
 const DEFAULT_BASE_PATH =
-  process.env.NEXT_PUBLIC_APP_BASEPATH ??
-  process.env.APP_BASEPATH ??
+  getEnvVariable('APP_BASEPATH', true) ??
   '/analytics';
-const DEFAULT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? `https://neupgroup.com${DEFAULT_BASE_PATH}`;
+const DEFAULT_PUBLIC_BASE_URL = getEnvVariable('BASE_URL', true) ?? `https://neupgroup.com${DEFAULT_BASE_PATH}`;
 
 function normalizeBasePath(basePath: string): string {
   if (!basePath) return '';

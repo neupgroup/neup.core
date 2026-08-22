@@ -21,6 +21,8 @@ application, service, component, or Logica modules.
 ::end
 */
 
+import { getEnvVariable } from '@/core/helpers/env';
+
 export type LoggerMode = 'always' | 'development' | 'production';
 
 export type LoggerMethod = 'debug' | 'error' | 'info' | 'log' | 'warn';
@@ -32,7 +34,7 @@ export type LoggerOptions = {
 
 function shouldLog(mode: LoggerMode): boolean {
   if (mode === 'always') return true;
-  return process.env.NODE_ENV === mode;
+  return getEnvVariable('NODE_ENV') === mode;
 }
 
 function writeLog(options: LoggerOptions, values: unknown[]): void {

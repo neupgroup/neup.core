@@ -4,6 +4,7 @@
  * so that hard redirects (window.location.href) always resolve correctly.
  */
 
+import { getEnvVariable } from '@/core/helpers/env';
 import { makeUrl } from '@/core/helpers/link/url';
 
 function normalizeBasePath(value: string | undefined): string | null {
@@ -58,13 +59,12 @@ function isAbsoluteUrl(value: string): boolean {
 }
 
 const CONFIGURED_BASE_PATH =
-    process.env.NEXT_PUBLIC_APP_BASEPATH ||
-    process.env.APP_BASEPATH;
+    getEnvVariable('APP_BASEPATH', true);
 
 export const APP_BASE_PATH = normalizeBasePath(CONFIGURED_BASE_PATH) ?? '';
 
 export const APP_DOMAIN =
-    process.env.NEXT_PUBLIC_APP_DOMAIN ||
+    getEnvVariable('APP_DOMAIN', true) ||
     (typeof window !== 'undefined' ? window.location.origin : 'https://neupgroup.com');
 
 /**

@@ -3,6 +3,7 @@
 // Use setCookieRaw() when you need full control over cookie attributes.
 
 import { cookies } from 'next/headers';
+import { getEnvVariable } from '@/core/helpers/env';
 import { Singleton } from '@/core/interface/singleton';
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
@@ -60,7 +61,7 @@ class CookieProvider extends Singleton {
             secure: true,
             sameSite: 'lax',
             path: '/',
-            domain: process.env.COOKIE_DOMAIN || '.neupgroup.com',
+            domain: getEnvVariable('COOKIE_DOMAIN') || '.neupgroup.com',
             expires: expiresOn,
         });
     }

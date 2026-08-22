@@ -20,15 +20,19 @@ Optional site headers are forwarded when configured so OpenRouter requests can b
 */
 
 import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/types';
+import { getEnvVariable } from '@/core/helpers/env';
 
 export async function requestOpenRouterCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
+  const openRouterSiteUrl = getEnvVariable('OPENROUTER_SITE_URL');
+  const openRouterSiteName = getEnvVariable('OPENROUTER_SITE_NAME');
+
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${input.apiKey}`,
-      ...(process.env.OPENROUTER_SITE_URL ? { 'HTTP-Referer': process.env.OPENROUTER_SITE_URL } : {}),
-      ...(process.env.OPENROUTER_SITE_NAME ? { 'X-Title': process.env.OPENROUTER_SITE_NAME } : {}),
+      ...(openRouterSiteUrl ? { 'HTTP-Referer': openRouterSiteUrl } : {}),
+      ...(openRouterSiteName ? { 'X-Title': openRouterSiteName } : {}),
     },
     body: JSON.stringify({
       model: input.model,

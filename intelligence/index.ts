@@ -14,19 +14,19 @@ The input may be the compact tuple `[inputData, context, prompt, supervisingProm
 
 ::private
 
-This module stays in `core` by composing the low-level provider clients in `core/ai/direct` and `core/ai/relying`.
+This module stays in `core` by composing the low-level provider clients in `core/intelligence`.
 
 ::private end
 
 ::end
 */
 
-import { requestAnthropicCompletion } from '@/core/ai/anthropic';
-import { requestGoogleAiCompletion } from '@/core/ai/googleai';
-import { requestOpenAiCompletion } from '@/core/ai/openai';
-import type { DirectAiMessage, DirectAiRequest, DirectAiResult } from '@/core/ai/_types';
-import { requestOmniRouteCompletion } from '@/core/ai/omniroute';
-import { requestOpenRouterCompletion } from '@/core/ai/openrouter';
+import { requestAnthropicCompletion } from '@/core/intelligence/anthropic';
+import { requestGoogleAiCompletion } from '@/core/intelligence/googleai';
+import { requestOpenAiCompletion } from '@/core/intelligence/openai';
+import type { DirectAiMessage, DirectAiRequest, DirectAiResult } from '@/core/intelligence/_types';
+import { requestOmniRouteCompletion } from '@/core/intelligence/omniroute';
+import { requestOpenRouterCompletion } from '@/core/intelligence/openrouter';
 
 export type AiOutputType = 'text' | 'image' | 'video' | 'audio' | 'json' | (string & {});
 

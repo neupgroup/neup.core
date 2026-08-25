@@ -20,7 +20,7 @@ The server URL and optional fallback API key are read from `OMNIROUTE_URL` and
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/ai/_types';
+import type { DirectAiRequest, DirectAiResult } from '@/core/intelligence/_types';
 import { getEnvVariable } from '@/core/helpers/env';
 
 const DEFAULT_OMNIROUTE_URL = 'http://localhost:20128';

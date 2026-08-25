@@ -19,7 +19,7 @@ System prompts are lifted out of the shared message array into Anthropic's top-l
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/ai/_types';
+import type { DirectAiRequest, DirectAiResult } from '@/core/intelligence/_types';
 
 export async function requestAnthropicCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
   const system = input.messages

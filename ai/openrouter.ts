@@ -19,7 +19,7 @@ Optional site headers are forwarded when configured so OpenRouter requests can b
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/ai/direct/types';
+import type { DirectAiRequest, DirectAiResult } from '@/core/ai/_types';
 import { getEnvVariable } from '@/core/helpers/env';
 
 export async function requestOpenRouterCompletion(input: DirectAiRequest): Promise<DirectAiResult> {

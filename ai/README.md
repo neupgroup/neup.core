@@ -2,13 +2,12 @@
 ::neup.documentation::core-ai-module
 ::title Core AI Providers
 
-Documents the direct and relying AI provider clients exposed from `core/ai`.
+Documents the AI provider clients exposed from `core/ai`.
 
 ::public
 
-`core/ai/direct/*` contains thin HTTP clients for providers that are called directly without Genkit.
-
-`core/ai/relying/*` contains clients for upstream AI gateways such as OpenRouter.
+The provider files in `core/ai` are thin HTTP clients for providers and upstream AI gateways.
+`_types.ts` contains the shared provider-agnostic request and response types.
 
 These modules are intentionally low-level and return normalized provider payloads so route handlers can stay thin.
 

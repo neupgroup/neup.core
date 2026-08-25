@@ -21,11 +21,12 @@ This module stays in `core` by composing the low-level provider clients in `core
 ::end
 */
 
-import { requestAnthropicCompletion } from '@/core/ai/direct/anthropic';
-import { requestGoogleAiCompletion } from '@/core/ai/direct/googleai';
-import { requestOpenAiCompletion } from '@/core/ai/direct/openai';
-import type { DirectAiMessage, DirectAiRequest, DirectAiResult } from '@/core/ai/direct/types';
-import { requestOpenRouterCompletion } from '@/core/ai/relying/openrouter';
+import { requestAnthropicCompletion } from '@/core/ai/anthropic';
+import { requestGoogleAiCompletion } from '@/core/ai/googleai';
+import { requestOpenAiCompletion } from '@/core/ai/openai';
+import type { DirectAiMessage, DirectAiRequest, DirectAiResult } from '@/core/ai/_types';
+import { requestOmniRouteCompletion } from '@/core/ai/omniroute';
+import { requestOpenRouterCompletion } from '@/core/ai/openrouter';
 
 export type AiOutputType = 'text' | 'image' | 'video' | 'audio' | 'json' | (string & {});
 
@@ -45,7 +46,7 @@ export type AiResponseInput = {
   outputType?: AiOutputType;
 };
 
-export type AiModelProvider = 'openai' | 'googleai' | 'google' | 'anthropic' | 'openrouter' | (string & {});
+export type AiModelProvider = 'openai' | 'googleai' | 'google' | 'anthropic' | 'openrouter' | 'omniroute' | (string & {});
 
 export type AiModelInfo = {
   provider?: AiModelProvider;
@@ -74,6 +75,7 @@ const PROVIDER_INVOKERS: Record<string, ProviderInvoker> = {
   google: requestGoogleAiCompletion,
   googleai: requestGoogleAiCompletion,
   openai: requestOpenAiCompletion,
+  omniroute: requestOmniRouteCompletion,
   openrouter: requestOpenRouterCompletion,
 };
 

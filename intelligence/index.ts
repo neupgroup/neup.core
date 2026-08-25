@@ -22,7 +22,9 @@ This module stays in `core` by composing the low-level provider clients in `core
 */
 
 import { requestAnthropicCompletion } from '@/core/intelligence/anthropic';
+import { requestCerebrasCompletion } from '@/core/intelligence/cerebras';
 import { requestGoogleAiCompletion } from '@/core/intelligence/googleai';
+import { requestMistralCompletion } from '@/core/intelligence/mistral';
 import { requestOpenAiCompletion } from '@/core/intelligence/openai';
 import type { DirectAiMessage, DirectAiRequest, DirectAiResult } from '@/core/intelligence/_types';
 import { requestOmniRouteCompletion } from '@/core/intelligence/omniroute';
@@ -46,7 +48,7 @@ export type AiResponseInput = {
   outputType?: AiOutputType;
 };
 
-export type AiModelProvider = 'openai' | 'googleai' | 'google' | 'anthropic' | 'openrouter' | 'omniroute' | (string & {});
+export type AiModelProvider = 'openai' | 'googleai' | 'google' | 'anthropic' | 'mistral' | 'cerebras' | 'openrouter' | 'omniroute' | (string & {});
 
 export type AiModelInfo = {
   provider?: AiModelProvider;
@@ -72,8 +74,10 @@ const TEXT_OUTPUT_TYPES = new Set<AiOutputType>(['text', 'json']);
 
 const PROVIDER_INVOKERS: Record<string, ProviderInvoker> = {
   anthropic: requestAnthropicCompletion,
+  cerebras: requestCerebrasCompletion,
   google: requestGoogleAiCompletion,
   googleai: requestGoogleAiCompletion,
+  mistral: requestMistralCompletion,
   openai: requestOpenAiCompletion,
   omniroute: requestOmniRouteCompletion,
   openrouter: requestOpenRouterCompletion,

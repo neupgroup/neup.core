@@ -29,9 +29,9 @@ import { ensureDatabaseRequirements } from '@/core/database/requirements'
 // Import the generated Prisma client from the project-local alias
 // If getting error, create index.ts in prisma/client and use this code in the index.ts
 // export * from './client'
-import { PrismaClient } from '@/prisma/client'
-export { Prisma } from '@/prisma/client'
-export type * from '@/prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
+export { Prisma }
+export type * from '@prisma/client'
 
 ensureDatabaseRequirements()
 

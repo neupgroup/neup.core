@@ -22,7 +22,9 @@ The provider accepts the server-rendered account snapshot from the root layout, 
 */
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { APP_BASE_PATH } from "@/core/appconfig";
+import application from "@/base/application.json";
+
+const APP_BASE_PATH = application.appBasePath;
 
 export type SessionUser = {
   accountId?: string | null;

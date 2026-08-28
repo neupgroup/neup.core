@@ -6,7 +6,7 @@ Validates the minimum local environment requirements needed before the shared Pr
 
 ::public
 
-Import `ensureDatabaseRequirements` from `@/core/database/requirements` to verify that `.env` exists and that required database environment variables are present.
+Import `ensureDatabaseRequirements` from `#/core/database/requirements` to verify that `.env` exists and that required database environment variables are present.
 
 ::public end
 

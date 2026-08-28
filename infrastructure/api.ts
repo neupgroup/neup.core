@@ -20,7 +20,7 @@ Callers own endpoint paths, base URLs, credentials, and response contracts.
 ::end
 */
 
-import { url } from '@/core/helpers/link/url';
+import { url } from '#/core/helpers/link/url';
 
 export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 

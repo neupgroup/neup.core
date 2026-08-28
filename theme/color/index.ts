@@ -1,4 +1,4 @@
-import { getPaletteValue } from '@/core/theme/config';
+import { getPaletteValue } from '#/core/theme/config';
 
 export function getFirst(scheme?: string): string {
   return getPaletteValue('color.first', scheme);
@@ -16,5 +16,5 @@ export function getFourth(scheme?: string): string {
   return getPaletteValue('color.fourth', scheme);
 }
 
-export { getPrimary, getSecondary, getTertiary } from '@/core/theme/color/text';
-export { getSuccess, getWarning, getError, getInfo } from '@/core/theme/color/semantic';
+export { getPrimary, getSecondary, getTertiary } from '#/core/theme/color/text';
+export { getSuccess, getWarning, getError, getInfo } from '#/core/theme/color/semantic';

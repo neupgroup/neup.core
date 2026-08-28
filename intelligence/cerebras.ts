@@ -19,7 +19,7 @@ This provider uses Cerebras's raw `/v1/chat/completions` endpoint and does not d
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/intelligence/_types';
+import type { DirectAiRequest, DirectAiResult } from '#/core/intelligence/_types';
 
 export async function requestCerebrasCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
   const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {

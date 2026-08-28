@@ -19,8 +19,8 @@ Optional site headers are forwarded when configured so OpenRouter requests can b
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '@/core/intelligence/_types';
-import { getEnvVariable } from '@/core/helpers/env';
+import type { DirectAiRequest, DirectAiResult } from '#/core/intelligence/_types';
+import { getEnvVariable } from '#/core/helpers/env';
 
 export async function requestOpenRouterCompletion(input: DirectAiRequest): Promise<DirectAiResult> {
   const openRouterSiteUrl = getEnvVariable('OPENROUTER_SITE_URL');

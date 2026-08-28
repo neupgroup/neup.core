@@ -1,4 +1,4 @@
-import { getPaletteValue } from '@/core/theme/config';
+import { getPaletteValue } from '#/core/theme/config';
 
 export function getSuccess(scheme?: string): string {
   return getPaletteValue('semantic.success', scheme);

@@ -23,7 +23,7 @@ This hook intentionally accepts title parts from the caller instead of reading p
 */
 
 import { useEffect } from 'react';
-import { formatAppTitle } from '@/core/metadata';
+import { formatAppTitle } from '#/core/metadata';
 
 /**
  * Custom hook to set page title with optional caller-owned context.

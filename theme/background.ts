@@ -1,4 +1,4 @@
-import { getPaletteValue } from '@/core/theme/config';
+import { getPaletteValue } from '#/core/theme/config';
 
 export function getPrimary(scheme?: string): string {
   return getPaletteValue('background.primary', scheme);

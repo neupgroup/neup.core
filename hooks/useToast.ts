@@ -17,6 +17,14 @@ export type ToastState =
   | 'danger'
   | 'success'
 
+export type ToastConvey =
+  | 'danger'
+  | 'dangerous'
+  | 'warning'
+  | 'success'
+  | 'info'
+  | 'none'
+
 export type ToastActionConvey =
   | 'danger'
   | 'warning'
@@ -34,6 +42,12 @@ export type ToastProps = {
   open?: boolean
 
   state?: ToastState
+
+  /*
+   * Controls the toast's visual tone. When omitted, state is used for
+   * backwards compatibility.
+   */
+  convey?: ToastConvey
 
   /*
    * Number of seconds before this toast dismisses itself. Zero means manual

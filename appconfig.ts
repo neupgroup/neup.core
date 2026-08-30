@@ -6,6 +6,7 @@
 
 import { getEnvVariable } from '#/core/helpers/env';
 import { makeUrl } from '#/core/helpers/link/url';
+import application from '@/base/application.json';
 
 function normalizeBasePath(value: string | undefined): string | null {
     if (typeof value !== 'string') return null;
@@ -58,8 +59,12 @@ function isAbsoluteUrl(value: string): boolean {
     return /^https?:\/\//i.test(value);
 }
 
+const applicationIdentity = application as { identity?: { basePath?: string } };
+const configuredApplicationBasePath = applicationIdentity.identity?.basePath;
 const CONFIGURED_BASE_PATH =
-    getEnvVariable('APP_BASEPATH', true);
+    typeof configuredApplicationBasePath === 'string' && configuredApplicationBasePath.trim()
+        ? configuredApplicationBasePath
+        : getEnvVariable('APP_BASEPATH', true);
 
 export const APP_BASE_PATH = normalizeBasePath(CONFIGURED_BASE_PATH) ?? '';
 

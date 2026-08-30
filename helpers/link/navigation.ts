@@ -19,9 +19,7 @@ Legacy back-navigation history is still available for older callers, but the sha
 ::end
 */
 
-import application from '@/base/application.json';
-
-const APP_BASE_PATH = application.appBasePath;
+import { APP_BASE_PATH } from '#/core/appconfig';
 
 type RouterNavigationOptions = {
   scroll?: boolean;

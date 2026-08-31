@@ -22,7 +22,7 @@ The provider accepts the server-rendered account snapshot from the root layout, 
 */
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import application from "@/base/application.json";
+import application from "$/application.json";
 
 const APP_BASE_PATH = application.appBasePath;
 

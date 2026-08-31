@@ -409,6 +409,8 @@ export function toast(
   const toastItem: ToasterToast = {
     ...props,
 
+    name: props.name as string,
+
     id,
 
     open: true,

@@ -59,8 +59,8 @@ function isAbsoluteUrl(value: string): boolean {
     return /^https?:\/\//i.test(value);
 }
 
-const applicationIdentity = application as { identity?: { basePath?: string } };
-const configuredApplicationBasePath = applicationIdentity.identity?.basePath;
+const applicationIdentity = application as { basepath?: string };
+const configuredApplicationBasePath = applicationIdentity.basepath;
 const CONFIGURED_BASE_PATH =
     typeof configuredApplicationBasePath === 'string' && configuredApplicationBasePath.trim()
         ? configuredApplicationBasePath

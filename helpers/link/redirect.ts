@@ -21,7 +21,7 @@ This helper delegates query preservation to `core/helpers/link/navigation` and o
 
 import application from '@/base/application.json';
 
-const APP_BASE_PATH = application.appBasePath;
+const APP_BASE_PATH = application.basepath;
 import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '#/core/helpers/link/navigation';
 
 type RouterLike = {

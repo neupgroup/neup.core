@@ -6,7 +6,7 @@
 
 import { getEnvVariable } from '#/core/helpers/env';
 import { makeUrl } from '#/core/helpers/link/url';
-import application from '@/base/application.json';
+import application from '$/application.json';
 
 function normalizeBasePath(value: string | undefined): string | null {
     if (typeof value !== 'string') return null;

@@ -6,7 +6,7 @@
 
 import { getEnvVariable } from '@neup/core/helpers/env';
 import { makeUrl } from '@neup/core/helpers/link/url';
-import application from '$/application.json';
+import application from '@base/application.json';
 
 function normalizeBasePath(value: string | undefined): string | null {
     if (typeof value !== 'string') return null;

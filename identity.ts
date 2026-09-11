@@ -1,4 +1,4 @@
-import identity from '$/identity.json';
+import identity from '@base/identity.json';
 
 export function getName(): string {
     return identity.name;

@@ -4,8 +4,8 @@
  * so that hard redirects (window.location.href) always resolve correctly.
  */
 
-import { getEnvVariable } from '#/core/helpers/env';
-import { makeUrl } from '#/core/helpers/link/url';
+import { getEnvVariable } from '@neup/core/helpers/env';
+import { makeUrl } from '@neup/core/helpers/link/url';
 import application from '$/application.json';
 
 function normalizeBasePath(value: string | undefined): string | null {

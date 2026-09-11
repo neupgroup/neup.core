@@ -21,14 +21,14 @@ This module stays in `core` by composing the low-level provider clients in `core
 ::end
 */
 
-import { requestAnthropicCompletion } from '#/core/intelligence/anthropic';
-import { requestCerebrasCompletion } from '#/core/intelligence/cerebras';
-import { requestGoogleAiCompletion } from '#/core/intelligence/googleai';
-import { requestMistralCompletion } from '#/core/intelligence/mistral';
-import { requestOpenAiCompletion } from '#/core/intelligence/openai';
-import type { DirectAiMessage, DirectAiRequest, DirectAiResult } from '#/core/intelligence/_types';
-import { requestOmniRouteCompletion } from '#/core/intelligence/omniroute';
-import { requestOpenRouterCompletion } from '#/core/intelligence/openrouter';
+import { requestAnthropicCompletion } from '@neup/core/intelligence/anthropic';
+import { requestCerebrasCompletion } from '@neup/core/intelligence/cerebras';
+import { requestGoogleAiCompletion } from '@neup/core/intelligence/googleai';
+import { requestMistralCompletion } from '@neup/core/intelligence/mistral';
+import { requestOpenAiCompletion } from '@neup/core/intelligence/openai';
+import type { DirectAiMessage, DirectAiRequest, DirectAiResult } from '@neup/core/intelligence/_types';
+import { requestOmniRouteCompletion } from '@neup/core/intelligence/omniroute';
+import { requestOpenRouterCompletion } from '@neup/core/intelligence/openrouter';
 
 export type AiOutputType = 'text' | 'image' | 'video' | 'audio' | 'json' | (string & {});
 

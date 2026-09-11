@@ -1,7 +1,7 @@
 "use client";
 
 import {useContext} from 'react';
-import {Geolocation} from '#/core/providers/geolocation';
+import {Geolocation} from '@neup/core/providers/geolocation';
 
 type ActivityStatus = "Success" | "Failed" | "Pending" | "Alert";
 type ActivityLogger = (

@@ -22,7 +22,7 @@ This helper delegates query preservation to `core/helpers/link/navigation` and o
 import application from '$/application.json';
 
 const APP_BASE_PATH = application.basepath;
-import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '#/core/helpers/link/navigation';
+import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '@neup/core/helpers/link/navigation';
 
 type RouterLike = {
     push: (href: string, options?: { scroll?: boolean }) => void;

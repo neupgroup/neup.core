@@ -19,7 +19,7 @@ This provider uses Mistral's OpenAI-compatible `/v1/chat/completions` endpoint a
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '#/core/intelligence/_types';
+import type { DirectAiRequest, DirectAiResult } from '@neup/core/intelligence/_types';
 
 type MistralContentPart = {
   type?: unknown;

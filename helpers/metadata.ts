@@ -6,7 +6,7 @@ Shared metadata helpers for formatting page titles.
 
 ::public
 
-Import metadata helpers from `#/core/metadata`.
+Import metadata helpers from `@neup/core/metadata`.
 
 This file is a compatibility export for older helper-path imports.
 
@@ -29,4 +29,4 @@ export {
   formatAppTitle,
   formatMetadataTitle,
   generatePageMetadata,
-} from '#/core/metadata';
+} from '@neup/core/metadata';

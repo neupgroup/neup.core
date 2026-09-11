@@ -3,8 +3,8 @@
 // Use setCookieRaw() when you need full control over cookie attributes.
 
 import { cookies } from 'next/headers';
-import { getEnvVariable } from '#/core/helpers/env';
-import { Singleton } from '#/core/interface/singleton';
+import { getEnvVariable } from '@neup/core/helpers/env';
+import { Singleton } from '@neup/core/interface/singleton';
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
 type SameSite = 'strict' | 'lax' | 'none';

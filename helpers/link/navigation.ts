@@ -19,7 +19,7 @@ Legacy back-navigation history is still available for older callers, but the sha
 ::end
 */
 
-import { APP_BASE_PATH } from '#/core/appconfig';
+import { APP_BASE_PATH } from '@neup/core/appconfig';
 
 type RouterNavigationOptions = {
   scroll?: boolean;

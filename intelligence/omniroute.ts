@@ -20,8 +20,8 @@ The server URL and optional fallback API key are read from `OMNIROUTE_URL` and
 ::end
 */
 
-import type { DirectAiRequest, DirectAiResult } from '#/core/intelligence/_types';
-import { getEnvVariable } from '#/core/helpers/env';
+import type { DirectAiRequest, DirectAiResult } from '@neup/core/intelligence/_types';
+import { getEnvVariable } from '@neup/core/helpers/env';
 
 const DEFAULT_OMNIROUTE_URL = 'http://localhost:20128';
 

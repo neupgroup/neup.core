@@ -24,7 +24,7 @@ Use `buildPublicAppUrl()` and `getPublicAppOrigin()` for public app URLs derived
 ::end
 */
 
-import { getEnvVariable } from '#/core/helpers/env';
+import { getEnvVariable } from '@neup/core/helpers/env';
 
 type RequestLike = {
   url?: string;

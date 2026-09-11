@@ -21,7 +21,7 @@ application, service, component, or Logica modules.
 ::end
 */
 
-import { getEnvVariable } from '#/core/helpers/env';
+import { getEnvVariable } from '@neup/core/helpers/env';
 
 export type LoggerMode = 'always' | 'development' | 'production';
 

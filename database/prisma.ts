@@ -6,7 +6,7 @@ Provides the shared Prisma client instance for server-side services and routes.
 
 ::public
 
-Import `prisma` from `#/core/database/prisma` whenever application code needs database access.
+Import `prisma` from `@neup/core/database/prisma` whenever application code needs database access.
 
 The module exports both a named `prisma` binding and a default export for compatibility with existing call sites.
 
@@ -25,7 +25,7 @@ The delegate guard rebuilds the cached client when the generated Prisma client s
 
 import { PrismaPg } from '@prisma/adapter-pg'
 // Keep @prisma/adapter-pg aligned with prisma and @prisma/client.
-import { ensureDatabaseRequirements } from '#/core/database/requirements'
+import { ensureDatabaseRequirements } from '@neup/core/database/requirements'
 // Import the generated Prisma client from the project-local alias
 // If getting error, create index.ts in prisma/client and use this code in the index.ts
 // export * from './client'

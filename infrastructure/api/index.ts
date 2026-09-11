@@ -1,67 +1,77 @@
-export const GET = 'GET' as const;
-export const POST = 'POST' as const;
-export const PUT = 'PUT' as const;
-export const PATCH = 'PATCH' as const;
-export const DELETE = 'DELETE' as const;
+/**
+ * Fluent API request entry point.
+ *
+ * The builder configures a request and transitions to Runner through run().
+ * Runner requires a second run() call to execute, keeping logging and response
+ * access unavailable until the request has actually completed.
+ */
+import { addFormData, addFormDataRaw, addHeader, getBody, type BodyState } from './body';
+import { Fallback } from './fallback';
+import { parseResponse } from './response';
+import { Runner, type ApiResponse } from './runner';
 
-export type ApiMethod = typeof GET | typeof POST | typeof PUT | typeof PATCH | typeof DELETE;
-export type ApiResponse<TBody = unknown> = { ok: boolean; status: number; body: TBody; headers: Headers };
-type FormEntry = { key: string; value: string };
 
-async function parseBody(response: Response): Promise<unknown> {
-  const type = response.headers.get('content-type')?.toLowerCase() ?? '';
-  return type.includes('application/json') ? response.json().catch(() => null) : response.text().catch(() => '');
+export { Runner, type ApiResponse } from './runner';
+export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+export const GET: ApiMethod = 'GET';
+export const POST: ApiMethod = 'POST';
+export const PUT: ApiMethod = 'PUT';
+export const PATCH: ApiMethod = 'PATCH';
+export const DELETE: ApiMethod = 'DELETE';
+
+
+export type ApiQuery = Record<string, string | number | boolean | null | undefined>;
+export type ApiRequestOptions = { baseUrl: string; path: string; method?: ApiMethod; query?: ApiQuery; body?: BodyInit | Record<string, unknown> | unknown[] | null; headers?: HeadersInit; bearerToken?: string | null; cookies?: Record<string, string | null | undefined> };
+export function createApiUrl(baseUrl: string, path: string, query?: ApiQuery): string {
+  // URL handles absolute paths and safely encodes query parameter values.
+  const result = new URL(path, baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+  for (const [key, value] of Object.entries(query ?? {})) if (value !== null && value !== undefined && value !== '') result.searchParams.set(key, String(value));
+  return result.toString();
 }
 
-export class Api {
+
+export class Api extends Fallback {
   private path?: string;
   private method: ApiMethod = GET;
-  private data?: BodyInit;
-  private headers = new Headers();
-  private formData: FormEntry[] = [];
-  private shouldFailOnError = false;
-  private response?: ApiResponse;
-
+  private body: BodyState = { headers: new Headers(), form: [] };
+  /** Sets the complete request URL. */
   atPath(path: string): this { this.path = path; return this; }
+  /** Selects the HTTP method used by fetch(). */
   usingMethod(method: ApiMethod): this { this.method = method; return this; }
-  addData(data: string): this { this.data = data; return this; }
-
-  /** Accepts "name: value" or "name=value". */
-  addHeader(header: string): this {
-    const separator = header.includes(':') ? ':' : '=';
-    const index = header.indexOf(separator);
-    if (index < 1) throw new Error('Header must be formatted as "name: value".');
-    this.headers.set(header.slice(0, index).trim(), header.slice(index + 1).trim());
-    return this;
-  }
-
-  addFormData(key: string, value: string): this { this.formData.push({ key, value }); return this; }
-  addFormDataRaw(value: string): this {
-    const index = value.indexOf('=');
-    if (index < 1) throw new Error('Raw form data must be formatted as "key=value".');
-    return this.addFormData(value.slice(0, index), value.slice(index + 1));
-  }
-  failOnError(value: boolean): this { this.shouldFailOnError = value; return this; }
-
-  async run(): Promise<this> {
+  /** Sets a raw request body. */
+  addData(data: string): this { this.body.data = data; return this; }
+  /** Adds one request header. */
+  addHeader(value: string): this { addHeader(this.body, value); return this; }
+  /** Adds one form-data field. */
+  addFormData(key: string, value: string): this { addFormData(this.body, key, value); return this; }
+  /** Adds a raw "key=value" form-data field. */
+  addFormDataRaw(value: string): this { addFormDataRaw(this.body, value); return this; }
+  /** Transitions from request configuration to the execution runner. */
+  run(): Runner {
     if (!this.path) throw new Error('API path has not been set.');
-    let body = this.data;
-    if (this.formData.length) {
-      const params = new URLSearchParams();
-      for (const entry of this.formData) params.append(entry.key, entry.value);
-      body = params;
-      if (!this.headers.has('content-type')) this.headers.set('content-type', 'application/x-www-form-urlencoded');
-    }
-    const result = await fetch(this.path, { method: this.method, headers: this.headers, body, cache: 'no-store' });
-    this.response = { ok: result.ok, status: result.status, body: await parseBody(result), headers: result.headers };
-    if (this.shouldFailOnError && !result.ok) {
-      throw new Error(`API request failed with status ${result.status}: ${JSON.stringify(this.response.body)}`);
-    }
-    return this;
+    // Capture the current request configuration in the runner closure.
+    return new Runner(async () => {
+      // Form data takes precedence over raw data when both are supplied.
+      const response = await fetch(this.path!, { method: this.method, headers: this.body.headers, body: getBody(this.body), cache: 'no-store' });
+      const parsed = await parseResponse(response);
+      // Preserve the response body in the error so callers can diagnose failures.
+      if (this.shouldFailOnError && !parsed.ok) throw new Error(`API request failed with status ${parsed.status}: ${JSON.stringify(parsed.body)}`);
+      return parsed;
+    });
   }
-
-  async log(): Promise<this> { if (!this.response) await this.run(); console.log(this.response); return this; }
-  getResponse<TBody = unknown>(): ApiResponse<TBody> | undefined { return this.response as ApiResponse<TBody> | undefined; }
 }
 
+
 export const api = new Api();
+
+
+/** Compatibility adapter for endpoint modules that still use the old API. */
+export async function runApi<TBody = unknown>(options: ApiRequestOptions): Promise<ApiResponse<TBody>> {
+  const request = new Api().atPath(createApiUrl(options.baseUrl, options.path, options.query));
+  if (options.method) request.usingMethod(options.method);
+  if (options.body !== undefined && options.body !== null) request.addData(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
+  for (const [key, value] of new Headers(options.headers).entries()) request.addHeader(`${key}: ${value}`);
+  if (options.bearerToken) request.addHeader(`authorization: Bearer ${options.bearerToken}`);
+  if (options.cookies) request.addHeader(`cookie: ${Object.entries(options.cookies).filter(([, value]) => value).map(([key, value]) => `${key}=${value}`).join('; ')}`);
+  return (await request.run().run()).getResponse<TBody>();
+}

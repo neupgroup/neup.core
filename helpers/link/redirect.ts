@@ -19,7 +19,7 @@ This helper delegates query preservation to `core/helpers/link/navigation` and o
 ::end
 */
 
-import application from '$/application.json';
+import application from '@base/application.json';
 
 const APP_BASE_PATH = application.basepath;
 import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '@neup/core/helpers/link/navigation';

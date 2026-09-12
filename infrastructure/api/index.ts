@@ -1,9 +1,7 @@
 /**
  * Fluent API request entry point.
  *
- * The builder configures a request and transitions to Runner through run().
- * Runner requires a second run() call to execute, keeping logging and response
- * access unavailable until the request has actually completed.
+ * The builder configures and executes a request through a single run() call.
  */
 import { addFormData, addFormDataRaw, addHeader, getBody, type BodyState } from './body';
 import { Fallback } from './fallback';
@@ -46,18 +44,13 @@ export class Api extends Fallback {
   addFormData(key: string, value: string): this { addFormData(this.body, key, value); return this; }
   /** Adds a raw "key=value" form-data field. */
   addFormDataRaw(value: string): this { addFormDataRaw(this.body, value); return this; }
-  /** Transitions from request configuration to the execution runner. */
-  run(): Runner {
+  /** Executes the configured request. */
+  async run(): Promise<ApiResponse> {
     if (!this.path) throw new Error('API path has not been set.');
-    // Capture the current request configuration in the runner closure.
-    return new Runner(async () => {
-      // Form data takes precedence over raw data when both are supplied.
-      const response = await fetch(this.path!, { method: this.method, headers: this.body.headers, body: getBody(this.body), cache: 'no-store' });
-      const parsed = await parseResponse(response);
-      // Preserve the response body in the error so callers can diagnose failures.
-      if (this.shouldFailOnError && !parsed.ok) throw new Error(`API request failed with status ${parsed.status}: ${JSON.stringify(parsed.body)}`);
-      return parsed;
-    });
+    const response = await fetch(this.path, { method: this.method, headers: this.body.headers, body: getBody(this.body), cache: 'no-store' });
+    const parsed = await parseResponse(response);
+    if (this.shouldFailOnError && !parsed.ok) throw new Error(`API request failed with status ${parsed.status}: ${JSON.stringify(parsed.body)}`);
+    return parsed;
   }
 }
 
@@ -73,5 +66,5 @@ export async function runApi<TBody = unknown>(options: ApiRequestOptions): Promi
   for (const [key, value] of new Headers(options.headers).entries()) request.addHeader(`${key}: ${value}`);
   if (options.bearerToken) request.addHeader(`authorization: Bearer ${options.bearerToken}`);
   if (options.cookies) request.addHeader(`cookie: ${Object.entries(options.cookies).filter(([, value]) => value).map(([key, value]) => `${key}=${value}`).join('; ')}`);
-  return (await request.run().run()).getResponse<TBody>();
+  return (await request.run()) as ApiResponse<TBody>;
 }

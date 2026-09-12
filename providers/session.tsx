@@ -22,9 +22,9 @@ The provider accepts the server-rendered account snapshot from the root layout, 
 */
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import application from "@base/application.json";
+import { getEnvVariable } from "@neup/core/helpers/env";
 
-const APP_BASE_PATH = application.basepath;
+const APP_BASE_PATH = getEnvVariable("APP_BASEPATH", true) ?? "";
 
 export type SessionUser = {
   accountId?: string | null;

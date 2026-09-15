@@ -19,10 +19,13 @@ This helper delegates query preservation to `core/helpers/link/navigation` and o
 ::end
 */
 
-import application from '@base/application.json';
-
-const APP_BASE_PATH = application.basepath;
+import { getEnvVariable } from '@neup/core/helpers/env';
 import { appendFlowParamsObject, appendStickyQueryParams, getFlowParams } from '@neup/core/helpers/link/navigation';
+
+// Next.js needs a static environment reference to inline the browser fallback.
+const APP_BASE_PATH = getEnvVariable('APP_BASEPATH', true)
+    ?? process.env.NEXT_PUBLIC_APP_BASEPATH?.trim()
+    ?? '';
 
 type RouterLike = {
     push: (href: string, options?: { scroll?: boolean }) => void;

@@ -9,7 +9,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const coreDir = process.argv[2];
-const configPath = path.resolve(coreDir, '../../base/application.json');
+const configPath = path.resolve(coreDir, '../../@base/application.json');
 
 try {
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));

@@ -13,25 +13,10 @@ const configPath = path.resolve(coreDir, '../../@base/application.json');
 
 try {
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  const features = config.features ?? {};
-  const database = features.database;
-  if (typeof features !== 'object' || features === null || Array.isArray(features)) {
-    throw new Error('features must be an object');
-  }
-  if (database !== undefined &&
-      (typeof database !== 'object' || database === null || Array.isArray(database))) {
-    throw new Error('features.database must be an object');
-  }
-  if (database?.isRequired !== undefined && typeof database.isRequired !== 'boolean') {
-    throw new Error('features.database.isRequired must be a boolean');
-  }
-  if (database?.type !== undefined &&
-      (typeof database.type !== 'string' || !database.type.trim())) {
-    throw new Error('features.database.type must be a nonempty string');
-  }
-  if (features.intelligence !== undefined && typeof features.intelligence !== 'boolean') {
-    throw new Error('features.intelligence must be a boolean');
-  }
+  if (!Array.isArray(config.modules)) throw new Error('modules must be an array');
+  const modules = new Map(config.modules.map((module) => [module.name, module]));
+  const database = modules.get('database');
+  const databaseRequired = database?.isRequired === true;
 
   const remove = (relativePath) => {
     const target = path.join(coreDir, relativePath);
@@ -41,7 +26,7 @@ try {
     }
   };
 
-  if (database?.isRequired === false) {
+  if (!databaseRequired) {
     remove('database');
   } else if (database?.type && database.type.trim().toLowerCase() !== 'prisma') {
     remove('database/prisma.ts');
@@ -49,7 +34,7 @@ try {
     remove('database/index.ts');
   }
 
-  if (features.intelligence === false) {
+  if (!modules.get('intelligence')?.isRequired) {
     remove('intelligence');
   }
 } catch (error) {

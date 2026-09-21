@@ -28,9 +28,8 @@ try {
 
   if (!databaseRequired) {
     remove('database');
-  } else if (database?.type && database.type.trim().toLowerCase() !== 'prisma') {
+  } else if (database?.type && !['postgresql', 'postgres', 'prisma'].includes(database.type.trim().toLowerCase())) {
     remove('database/prisma.ts');
-    // The current entry point only re-exports the Prisma adapter.
     remove('database/index.ts');
   }
 

@@ -1,4 +1,5 @@
-import application from '@base/application.json';
+import identityConfig from '@base/identity.json';
+import assetsConfig from '@base/assets.json';
 
 type ApplicationIdentity = {
     name?: string;
@@ -11,7 +12,8 @@ type ApplicationIdentity = {
     };
 };
 
-const identity = application as ApplicationIdentity;
+const identity = identityConfig as ApplicationIdentity;
+const assets = assetsConfig as ApplicationIdentity['assets'];
 
 export function getName(): string {
     return identity.name ?? '';
@@ -22,5 +24,5 @@ export function getDescription(): string {
 }
 
 export function getLogo(): string {
-    return identity.logo ?? identity.assets?.logo?.main ?? '';
+    return identity.logo ?? assets?.logo?.main ?? '';
 }

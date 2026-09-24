@@ -9,14 +9,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const coreDir = process.argv[2];
-const configPath = path.resolve(coreDir, '../../@base/application.json');
+const baseDir = path.resolve(coreDir, '../../@base');
+const modulesPath = path.join(baseDir, 'modules.json');
+const featuresPath = path.join(baseDir, 'features.json');
 const logicaDir = path.resolve(coreDir, '../logica');
 
 try {
-  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  if (!Array.isArray(config.modules)) throw new Error('modules must be an array');
-  const modules = new Map(config.modules.map((module) => [module.name, module]));
-  const database = modules.get('database');
+  const readJson = (file, fallback) => fs.existsSync(file)
+    ? JSON.parse(fs.readFileSync(file, 'utf8'))
+    : fallback;
+  const moduleList = readJson(modulesPath, []);
+  const features = readJson(featuresPath, {});
+  if (!Array.isArray(moduleList)) throw new Error('modules.json must contain an array');
+  const modules = new Map(moduleList.map((module) => [module.name, module]));
+  const database = features['native.database'] ?? modules.get('database');
   const databaseRequired = database?.isRequired === true;
   const account = modules.get('account');
   const accountSystem = typeof account?.accountSystem === 'string'
@@ -57,11 +63,11 @@ try {
     }
   }
 
-  if (!modules.get('intelligence')?.isRequired) {
+  if (!modules.get('intelligence')?.isRequired && !features['native.intelligence']?.isRequired) {
     remove('intelligence');
   }
 } catch (error) {
-  console.error(`Unable to optimize Core using ${configPath}: ${error.message}`);
+  console.error(`Unable to optimize Core using ${baseDir}: ${error.message}`);
   process.exitCode = 1;
 }
 NODE
